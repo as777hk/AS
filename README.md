@@ -1,43 +1,64 @@
-# StudioSpace — Creative Workspace Marketplace
+# StudioSpace — B14-A8-Cat_Harry
 
-Project starter repository for the B14-A8 StudioSpace assignment.
+A full-stack peer-to-peer creative workspace and production studio marketplace. Hosts publish studios; creators discover spaces and request bookings.
 
-## Current repository state
+## Source layout and build bootstrap
 
-The GitHub repository currently contains the initial Next.js configuration and project README. The complete client and Express API source folders are **not yet pushed to this repository**. A complete source package is available in the source archives shared with the project owner in this ChatGPT conversation; extract the package and copy its `AS/client` and `AS/server` folders into this repository before deployment.
+The application source bundles are stored in Git as base64 shards so Vercel/Render can bootstrap the monorepo without a local Git push. The deployment install/build commands extract those archives into `client/` and `server/`.
 
-## Intended application features
+To reconstruct a local checkout:
 
-- Three-slide interactive hero, latest six featured studios and five category filters.
-- Better Auth email/password registration and login with optional Google OAuth configuration.
-- Studio discovery, details gallery, create/update/delete workflows and ownership checks.
-- Booking modal with server-side amount calculation, Pending bookings, host status management, cancellation and confirmed-slot collision checks.
-- Light/dark theme, wishlist, confirmed-booking PDF invoice, skeleton loading, empty states, toast notifications and custom 404.
+```bash
+cd client
+cat .source/client-*.b64 | base64 -d | tar -xz --strip-components=1
+cd ../server
+cat .source/server-*.b64 | base64 -d | tar -xz --strip-components=1
+```
 
-## Intended stack
+The extracted folders contain the readable application source, README files, environment examples, tests and local scripts.
 
-Next.js App Router, React, TypeScript, Better Auth, MongoDB adapter, Express.js, MongoDB, Zod, jose, Swiper, next-themes, Sonner and jsPDF.
+## Assignment features covered
 
-## Local setup after source files are copied
+- Three-slide Swiper hero, six dynamic featured studios (`.limit(6)`), five category filters, homepage section anchors and responsive navigation/footer.
+- Better Auth email/password registration and login, Google OAuth when credentials are configured, callback-route preservation and examiner auto-fill.
+- Public studio discovery/details, image gallery, host details, reviews display, owner-only add/edit/delete and read-only host identity.
+- Booking modal with server-side price calculation, Pending workflow, customer cancellation, host status management and confirmed-time overlap prevention.
+- JWT validation in an HTTPOnly cookie for Express mutations, Light/Dark mode, saved studios and confirmed-booking PDF invoice.
+- Loading skeletons, custom 404, empty states, Sonner toasts and custom confirmation dialogs.
 
-1. Use Node.js 22+ and MongoDB Atlas or a local MongoDB database.
-2. Copy `client/.env.example` to `client/.env.local` and `server/.env.example` to `server/.env`.
-3. Configure MongoDB, Better Auth base URL/secret, Google OAuth credentials and the API URL.
-4. In `server/`, run `npm install` then `npm run dev` (port 4000 by default).
-5. In `client/`, run `npm install` then `npm run dev` (port 3000 by default).
+## Technology
 
-## Environment and deployment
+Next.js App Router, React, TypeScript, Tailwind CSS, Better Auth, MongoDB adapter, Express.js, MongoDB, Zod, jose, Swiper, next-themes, Sonner and jsPDF.
 
-See `docs/DEPLOYMENT.md` in the full source package. Never commit real credentials. The Vercel project is named `as` and is configured for the `client` root directory. The Express API can be deployed with the included Render blueprint.
+## Local setup
 
-## Examiner credentials
+1. Use Node.js 22+ and a MongoDB Atlas database.
+2. Extract the client and server bundles using the commands above.
+3. Copy `client/.env.example` to `client/.env.local`, and `server/.env.example` to `server/.env`.
+4. Configure the same `MONGODB_URI`, `MONGODB_DB`, Better Auth secret and base URL in both apps.
+5. Add Google OAuth web client credentials and its callback URL to enable Google login.
+6. In `server/`, run `npm install && npm run dev` (port 4000).
+7. In `client/`, run `npm install && npm run dev` (port 3000).
 
-After deployment and authentication configuration, create an assessment-only account using `client/scripts/create-examiner.mjs`. The login auto-fill uses the demo email `examiner@studiospace.demo` and password `StudioSpace!2026`; the account must be created before it can be used. Remove or change it after assessment.
+## Deployment configuration
 
-## Submission checklist
+- Vercel project: `as`, team `AS777`, Node.js 22, root directory `client`.
+- The Vercel install command extracts the client source shards before `npm install`.
+- `render.yaml` defines the Express API service; Render must be connected to this repository and receive its environment variables.
+- MongoDB database name is `studiospace`; the Atlas app user is scoped to that database.
 
-- Client repository: this repository, after the source folders are copied and pushed.
-- Server repository: create a separate public `AS-server` repository and push the contents of `server/`.
-- Live website: use the production URL only after Vercel reports the deployment as READY.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for all environment variables and validation steps. Never commit real credentials.
 
-The current linked GitHub integration can update repository files but does not provide repository creation or a local-directory Git push action.
+## Examiner login
+
+The login auto-fill is configured for the assessment-only account `examiner@studiospace.demo` / `StudioSpace!2026`. The account itself must be created after deployment using the included examiner creation script and the configured Better Auth environment. Change/remove it after assessment.
+
+## GitHub and submission
+
+- Client/full-stack repository: https://github.com/samscaleup777/AS
+- Separate backend repository: the GitHub connector used for this session cannot create repositories. Create a public `AS-server` repository and publish the extracted `server/` folder before final submission.
+- Live Next.js website: publish the generated Vercel production URL only after the deployment is reported as `READY`.
+
+## Verification status
+
+The booking-rules test suite has 4 passing isolated tests. Full dependency installation, full Next.js and Express builds, Google OAuth, browser end-to-end checks, separate backend repository publication and live deployment still require the external setup described in the deployment guide. Do not treat the application as production-verified until those checks pass.

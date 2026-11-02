@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: studiospace-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: cat .source/server-*.b64 | base64 -d | tar -xz --strip-components=1 && rm -rf .source && npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: studiospace
+      - key: AUTH_BASE_URL
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
