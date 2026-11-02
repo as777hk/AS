@@ -1,37 +1,59 @@
-# StudioSpace — Client Application
+# StudioSpace — Creative Workspace Marketplace
 
-A unique, responsive creative-studio marketplace built with Next.js App Router, React, TypeScript and Tailwind CSS. The client connects to the companion Express API through a same-origin Next.js rewrite so the API's HTTPOnly JWT cookie remains first-party in the browser.
+A full-stack assignment implementation for a peer-to-peer marketplace connecting creative workspace hosts with creators.
 
-## Live website
+## Repository contents
 
-`https://YOUR-CLIENT-APP.vercel.app` — replace this with the deployed client URL before submitting the assignment.
+- `client/` — Next.js App Router frontend, Better Auth, studio browsing and management, booking interface, wishlist, PDF invoice, theme switcher and API proxy.
+- `server/` — Express API, MongoDB collections and indexes, Better Auth JWT/JWKS verification, studio CRUD, booking workflow, confirmed-slot collision checks, newsletter and wishlist APIs.
+- `docs/` — environment and deployment instructions.
+- `render.yaml` — Render service blueprint for the Express API.
 
-## Features
+## Main features
 
-- Three-slide interactive hero, dynamic six-studio feature section and five category deep links.
-- Studio discovery with search, category, price and sort filters.
-- Studio detail gallery, amenities, host information, reviews and booking modal.
-- Better Auth email/password and Google login, protected route redirect preservation and test-account auto-fill.
-- Host listing create/update/delete forms with read-only host information and ImgBB upload support.
-- Creator bookings and host management, Pending/Confirmed/Completed/Cancelled states and cancellation modal.
-- Global Light/Dark theme toggle, saved studio wishlist, confirmed-booking PDF invoice.
-- Branded loading, empty and custom not-found states with toast feedback.
+- Responsive homepage with a three-slide Swiper hero, six latest featured studios and five category filters.
+- Email/password registration and login, Google OAuth when configured, callback URL preservation and private pages.
+- Studio discovery, gallery details, owner-only create/update/delete, amenities and read-only host identity.
+- Booking modal with server-side price calculation, Pending requests, host confirmation/decline, customer cancellation and confirmed-booking overlap checks.
+- Whole-site light/dark theme, wishlist, confirmed-booking PDF invoice, skeleton loading, empty states, toast notifications and custom 404.
 
-## Run locally
+## Stack
 
-Copy `.env.example` to `.env.local`, then run:
+Next.js App Router, React, TypeScript, Better Auth, MongoDB adapter, Express.js, MongoDB, Zod, jose, Swiper, next-themes, Sonner and jsPDF.
+
+## Local setup
+
+1. Use Node.js 22+ and a MongoDB Atlas or local MongoDB database.
+2. Copy `client/.env.example` to `client/.env.local` and `server/.env.example` to `server/.env`.
+3. Configure the same MongoDB database and Better Auth base URL/secret in both apps. Add Google OAuth credentials to enable Google login.
+4. In `server/`, run `npm install` and `npm run dev` (default port 4000).
+5. In `client/`, run `npm install` and `npm run dev` (default port 3000).
+6. Register a user at `http://localhost:3000/register`.
+
+## Environment and deployment
+
+See [Deployment Guide](docs/DEPLOYMENT.md). Never commit real credentials. Vercel project name: `as`, frontend root directory: `client`. The Express API can be deployed with the included Render blueprint.
+
+## Examiner credentials
+
+Create an assignment-only examiner user after deployment with:
 
 ```bash
-npm install
-npm run dev
+cd client
+BETTER_AUTH_URL=https://YOUR_FRONTEND_DOMAIN \
+EXAMINER_EMAIL=examiner@studiospace.demo \
+EXAMINER_PASSWORD=StudioSpace!2026 \
+npm run create:examiner
 ```
 
-Client URL: `http://localhost:3000`. The Express API must be running separately on `http://localhost:5000` (see the companion server package in the supplied project bundle).
+The login page's examiner auto-fill matches these values. The account is not automatically seeded; run the command above after configuring the live site. Remove or change it after assessment.
 
-Set the real deployment URL in `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL`, the server's `AUTH_BASE_URL`/`AUTH_ISSUER`/`AUTH_AUDIENCE`, and Google OAuth callback configuration. See `docs/deploy.md` in the supplied project bundle.
+## Submission links
 
-## Examiner test credentials
+- Client/full-stack source repository: https://github.com/samscaleup777/AS
+- Separate backend repository: create a public `AS-server` repository and push this repository's `server/` folder; current GitHub connector permissions do not include repository creation.
+- Live Next.js URL: add the production URL after Vercel reports the deployment as READY.
 
-Create a dedicated examiner account through the Register page after MongoDB is configured. Set `NEXT_PUBLIC_EXAMINER_EMAIL` and `NEXT_PUBLIC_EXAMINER_PASSWORD` to that assessment-only account in the Vercel build environment. The login page includes an auto-fill button that reads those public environment variables. Do not expose a personal account password.
+## Required final checks
 
-**Submission reminder:** Add the actual live URL and actual examiner-only credentials before sending this repository to the instructor.
+Run `npm run build` in both apps and `npm test` in `server/`. Then test registration, Google OAuth, refresh on every private route, studio ownership, booking overlap, pending cancellation, host status updates, wishlist, invoice export, and both themes on the deployed URLs.
