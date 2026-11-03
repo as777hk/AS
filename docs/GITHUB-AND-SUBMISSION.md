@@ -9,23 +9,25 @@
 ## Vercel projects
 
 - Frontend: `as-frontend` — https://as-kappa-six.vercel.app
-- Backend (the requested `AS` project): `as` — https://as-two-lac.vercel.app
+- Backend project requested as `AS`: `as` — https://as-two-lac.vercel.app
 
-The old unused project named `as-api` is separate and can be deleted from Vercel project settings.
+The backend root endpoint returns an online status object and lists its main API routes. The unused older `as-api` project is separate and can be deleted from Vercel project settings.
 
 ## Examiner account
 
 - Email: `examiner@studiospace.demo`
 - Password: `StudioSpace!2026`
 
-This is a public assessment-demo account. The Login page also includes the examiner auto-fill control.
+This is a public assessment-demo account. The Login page also includes an examiner auto-fill control.
 
 ## Commit requirements
 
-The assignment asks for at least 15 meaningful frontend commits and 8 meaningful backend commits. The client repository has more than 30 commits in total, though some are source-bundle, deployment and documentation work; those should not all be counted as feature commits. The separate backend repository has more than 20 commits, including backend API/auth/database/booking/wishlist/newsletter/test and deployment changes.
+The client repository currently has 53 commits. Nineteen recent frontend commits contain code changes for image performance, saved-state accessibility, studio search/filter accessibility, registration and listing validation, accessible booking dialogs, cancellation/deletion confirmations, newsletter validation and status announcements.
 
-Do not add empty or fabricated commits. Commit substantive feature changes and review the final history against the rubric.
+The separate backend repository currently has 25 commits, including API root/health, database, JWT authentication, studio CRUD/availability, booking lifecycle and collision rules, wishlist, newsletter and tests.
 
-## README checklist
+## Remaining setup
 
-The README identifies StudioSpace, includes project features and the stack, local setup, deployment links and the examiner credentials. Never commit Atlas URIs, OAuth client secrets or private production credentials.
+Google OAuth still needs a Web OAuth Client ID and Client Secret configured in the Vercel `as-frontend` project. Complete a real browser test of the examiner login, HTTPOnly JWT cookie, protected CRUD and booking workflows before final hand-in.
+
+Never commit Atlas URIs, OAuth secrets or private production credentials.
