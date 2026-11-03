@@ -152,4 +152,11 @@ replaceOnce("src/app/my-listings/page.tsx", "<h2>Delete this listing?</h2><p cla
 replaceOnce("src/components/footer.tsx", "<input type=\"email\" required placeholder=\"Your email address\" value={email} onChange={e=>setEmail(e.target.value)}/>", "<input type=\"email\" required autoComplete=\"email\" maxLength={254} aria-label=\"Newsletter email address\" placeholder=\"Your email address\" value={email} onChange={e=>setEmail(e.target.value)}/>", "Improve newsletter form accessibility and validation");
 replaceOnce("src/app/my-listings/page.tsx", "<img src={s.imageUrl} alt=\"\"/>", "<img src={s.imageUrl} alt={s.title} loading=\"lazy\" decoding=\"async\"/>", "Add semantic alt text and lazy loading to listing table");
 replaceOnce("src/app/my-bookings/page.tsx", "<span className={`status status-${b.status.toLowerCase()}`}>{b.status}</span>", "<span role=\"status\" aria-label={`Booking status: ${b.status}`} className={`status status-${b.status.toLowerCase()}`}>{b.status}</span>", "Announce booking status to assistive technology");
+const packageJsonPath = "package.json";
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+if (packageJson.dependencies?.jspdf !== "4.2.1") {
+  packageJson.dependencies = { ...packageJson.dependencies, jspdf: "4.2.1" };
+  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\\n");
+}
+
 console.log("StudioSpace frontend assignment patches applied.");
