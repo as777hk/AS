@@ -4,22 +4,22 @@ A full-stack peer-to-peer creative workspace and production studio marketplace. 
 
 ## Source layout and build bootstrap
 
-The application source bundles are stored in Git as base64 shards so Vercel/Render can bootstrap the monorepo without a local Git push. The deployment install/build commands extract those archives into `client/` and `server/`.
+The client source is stored in Git as base64 shards under `client/.source`. The deployment install command extracts those files before installing and building the Next.js app. The standalone Express API has a separate, readable source repository: [AS-backend](https://github.com/samscaleup777/AS-backend).
 
-To reconstruct a local checkout:
+To reconstruct the client locally:
 
 ```bash
 cd client
 cat .source/client-*.b64 | base64 -d | tar -xz --strip-components=1
-cd ../server
-cat .source/server-*.b64 | base64 -d | tar -xz --strip-components=1
+npm install
+npm run dev
 ```
 
-The extracted folders contain the readable application source, README files, environment examples, tests and local scripts.
+For the API, clone [AS-backend](https://github.com/samscaleup777/AS-backend), copy `.env.example` to `.env`, configure the values, then run `npm install && npm run dev`.
 
-## Assignment features covered
+## Assignment features
 
-- Three-slide Swiper hero, six dynamic featured studios (`.limit(6)`), five category filters, homepage section anchors and responsive navigation/footer.
+- Three-slide Swiper hero, six dynamic featured studios, five category filters, homepage section anchors and responsive navigation/footer.
 - Better Auth email/password registration and login, Google OAuth when credentials are configured, callback-route preservation and examiner auto-fill.
 - Public studio discovery/details, image gallery, host details, reviews display, owner-only add/edit/delete and read-only host identity.
 - Booking modal with server-side price calculation, Pending workflow, customer cancellation, host status management and confirmed-time overlap prevention.
@@ -30,35 +30,34 @@ The extracted folders contain the readable application source, README files, env
 
 Next.js App Router, React, TypeScript, Tailwind CSS, Better Auth, MongoDB adapter, Express.js, MongoDB, Zod, jose, Swiper, next-themes, Sonner and jsPDF.
 
-## Local setup
+## Live deployment
 
-1. Use Node.js 22+ and a MongoDB Atlas database.
-2. Extract the client and server bundles using the commands above.
-3. Copy `client/.env.example` to `client/.env.local`, and `server/.env.example` to `server/.env`.
-4. Configure the same `MONGODB_URI`, `MONGODB_DB`, Better Auth secret and base URL in both apps.
-5. Add Google OAuth web client credentials and its callback URL to enable Google login.
-6. In `server/`, run `npm install && npm run dev` (port 4000).
-7. In `client/`, run `npm install && npm run dev` (port 3000).
+- **Frontend:** https://as-kappa-six.vercel.app
+- **Backend API:** https://as-two-lac.vercel.app
+- **Health check:** https://as-two-lac.vercel.app/health
+- **Frontend Vercel project:** `as-frontend`
+- **Backend Vercel project:** `as`
 
-## Deployment configuration
+The latest frontend and backend Vercel builds are marked `READY`. Database-backed routes still require the Atlas connection string to be added to the new `as` backend project's environment.
 
-- Vercel project: `as`, team `AS777`, Node.js 22, root directory `client`.
-- The Vercel install command extracts the client source shards before `npm install`.
-- `render.yaml` defines the Express API service; Render must be connected to this repository and receive its environment variables.
-- MongoDB database name is `studiospace`; the Atlas app user is scoped to that database.
+## Environment configuration
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for all environment variables and validation steps. Never commit real credentials.
+Frontend Vercel variables include `BETTER_AUTH_URL`, `NEXT_PUBLIC_SITE_URL`, `API_SERVER_URL`, `MONGODB_URI`, `MONGODB_DB` and `BETTER_AUTH_SECRET`. Add Google OAuth web credentials to enable Google sign-in.
+
+Backend variables: `MONGODB_URI` (sensitive), `MONGODB_DB=studiospace`, `AUTH_BASE_URL=https://as-kappa-six.vercel.app`, `CLIENT_ORIGIN=https://as-kappa-six.vercel.app` and `NODE_ENV=production`.
+
+Never commit real credentials.
 
 ## Examiner login
 
-The login auto-fill is configured for the assessment-only account `examiner@studiospace.demo` / `StudioSpace!2026`. The account itself must be created after deployment using the included examiner creation script and the configured Better Auth environment. Change/remove it after assessment.
+Login auto-fill is configured for the assessment-only account `examiner@studiospace.demo`. The account itself must still be created after the auth/database configuration is complete, using the included examiner creation script. Set and retain its password only in the private deployment environment; do not publish real credentials.
 
 ## GitHub and submission
 
 - Client/full-stack repository: https://github.com/samscaleup777/AS
-- Separate backend repository: the GitHub connector used for this session cannot create repositories. Create a public `AS-server` repository and publish the extracted `server/` folder before final submission.
-- Live Next.js website: publish the generated Vercel production URL only after the deployment is reported as `READY`.
+- Separate backend repository: https://github.com/samscaleup777/AS-backend
+- Live client website: https://as-kappa-six.vercel.app
 
 ## Verification status
 
-The booking-rules test suite has 4 passing isolated tests. Full dependency installation, full Next.js and Express builds, Google OAuth, browser end-to-end checks, separate backend repository publication and live deployment still require the external setup described in the deployment guide. Do not treat the application as production-verified until those checks pass.
+The Express backend TypeScript build and the Next.js frontend production build are both marked `READY`. The isolated booking-rules suite has 4 passing tests. Full live database connectivity, OAuth sign-in, examiner-account creation and browser end-to-end tests still need to be completed before describing the project as fully verified. The client repository's 15 meaningful feature commits also need a final commit-history review; the backend repository already has more than 8 backend-specific commits.
