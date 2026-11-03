@@ -26,7 +26,7 @@
 - Google OAuth credentials are not configured. Create a Web OAuth client and add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to Vercel project `as-frontend`.
 - Browser end-to-end tests still need a human browser pass: sign in, verify HTTPOnly JWT cookie, private-route reload, add/edit/delete studio, booking creation/cancellation, host confirmation, confirmed-overlap rejection, wishlist, PDF invoice, theme toggle and mobile layout.
 - The GitHub client repo has 26 total commits, but not all are feature-specific. The requirement explicitly calls for 15 meaningful frontend commits; review the commit history or add substantive feature commits rather than treating setup/documentation commits as feature work.
-- Backend history has 22 commits, including backend-specific API, MongoDB, JWT, CRUD, bookings, wishlist, newsletter, tests and deployment work.
+- Backend history has more than 20 commits, including backend-specific API, MongoDB, JWT, CRUD, bookings, wishlist, newsletter, tests and deployment work.
 - Host Guarantee/Creator Support copy is deliberately cautious: StudioSpace does not claim to provide insurance, independent host verification or 24/7 human support. A real platform would need those services before advertising them as guarantees.
 - Availability collisions are enforced server-side for Confirmed bookings; a dedicated calendar UI showing occupied slots before the user submits is not yet verified.
 - Image URL fields are supported; no third-party image-upload provider is configured.
