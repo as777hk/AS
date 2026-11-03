@@ -1,16 +1,35 @@
 # StudioSpace API — Vercel backend
 
-The Express API is deployed as a separate Vercel Express project, `as-api`, using the repository's `server/` root directory.
+The Express API is deployed as a separate Vercel project named `as`, linked to the public GitHub repository:
 
-The project install command extracts `server/.source/server-*.b64` into the server root and installs Node dependencies. Vercel detects Express from `src/index.ts` and runs the app as a serverless Express function.
+https://github.com/samscaleup777/AS-backend
 
-API environment:
-- `MONGODB_URI`: sensitive URI for the database-scoped `studiospace_app` user.
+Vercel detects the Express app from the default export in `src/index.ts`. The project uses the repository root, Express framework detection and Node.js 22.
+
+## Deployment
+
+- Vercel project: `as`
+- Project domain: https://as-two-lac.vercel.app
+- Health endpoint: https://as-two-lac.vercel.app/health
+- Latest TypeScript production build: `READY`
+
+## Environment variables
+
+- `MONGODB_URI`: sensitive URI for the database-scoped `studiospace_app` user. This must be added to the new `as` project before database-backed routes can work.
 - `MONGODB_DB=studiospace`
-- `AUTH_BASE_URL=https://as-hk777.vercel.app`
-- `CLIENT_ORIGIN=https://as-hk777.vercel.app`
+- `AUTH_BASE_URL=https://as-kappa-six.vercel.app`
+- `CLIENT_ORIGIN=https://as-kappa-six.vercel.app`
 - `NODE_ENV=production`
 
-Health endpoint: `/health`. API base URL is assigned by Vercel after the first deployment is ready. Set it in the frontend `API_SERVER_URL` variable and redeploy the frontend.
+Set the same Atlas URI already used by the frontend. Keep it as a sensitive Vercel environment variable; never commit it.
 
-Backend public source is included under `server/.source` in this full-stack repo. The assignment still requires a separate public backend repository, which must be created as `AS-server` from GitHub and populated with the extracted server source.
+## Frontend connection
+
+The Next.js frontend proxy forwards requests to `API_SERVER_URL=https://as-two-lac.vercel.app`. The frontend origin is `https://as-kappa-six.vercel.app`, which must remain the Better Auth issuer and allowed client origin.
+
+## Validation
+
+1. Confirm `GET /health` returns JSON with `status: "ok"`.
+2. After setting `MONGODB_URI`, verify `GET /api/studios/featured`.
+3. Verify the HttpOnly `better_auth_jwt` cookie is issued by the frontend and accepted by protected routes.
+4. Verify ownership checks and confirmed-slot collision prevention.
