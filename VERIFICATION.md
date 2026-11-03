@@ -5,7 +5,7 @@
 - The public frontend/full-stack repository is https://github.com/samscaleup777/AS.
 - The public, separate Express backend repository is https://github.com/samscaleup777/AS-backend.
 - The frontend repo now exposes 34 normal source files below `client/src/`, along with package/build configuration. The original `client/.source/` archive shards remain because Vercel's install command reconstructs the source before applying `client/patch-auth.mjs`.
-- The public frontend repo currently has 70 commits; the separate backend repo has 26 commits. The frontend history includes more than 15 substantive code changes for booking availability, wishlist persistence, form validation, responsive menu state, accessible dialogs/status, image loading and source/Terms fixes. Backend history includes API root/health, MongoDB, JWT, Studio CRUD/availability, booking lifecycle/collision, wishlist, newsletter, tests and deployment work.
+- The frontend commit history exceeds the requirement for 15 meaningful client commits, with substantive code changes for booking availability, wishlist persistence, form validation, responsive menu state, accessible dialogs/status, image loading and source/Terms fixes. The backend commit history exceeds the requirement for 8 meaningful server commits, with API root/health, MongoDB, JWT, Studio CRUD/availability, booking lifecycle/collision, wishlist, newsletter, tests and deployment work.
 - MongoDB Atlas cluster `AnnikaCluster`, database `studiospace`.
 - Dedicated Atlas API user `studiospace_api` has only `readWrite` access to the `studiospace` database. Its URI is stored as a Sensitive Vercel environment value.
 - Six illustrative demo studio documents exist in the `studios` collection, assigned to `examiner@studiospace.demo`.
