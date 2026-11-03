@@ -14,7 +14,7 @@ function patchFile(path, replacements) {
 
 const authPath = "src/lib/auth.ts";
 const authSource = readFileSync(authPath, "utf8");
-const authPatched = authSource.replace(/\\s*sessionCookieCache:\\s*true,\\s*/g, "\\n    ");
+const authPatched = authSource.replace(/\s*sessionCookieCache:\s*true,\s*/g, "\n    ");
 writeFileSync(authPath, authPatched);
 if (authPatched.includes("sessionCookieCache: true")) {
   throw new Error("Better Auth JWT sessionCookieCache setting was not removed.");
