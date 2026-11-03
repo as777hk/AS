@@ -90,3 +90,16 @@ The obsolete `as-api` project has been removed. Keep the frontend and backend pr
 - Live checks have returned HTTP 200 for frontend pages, API root, API health, featured studios, availability lookup, frontend API proxy and Better Auth JWKS. Protected routes correctly return HTTP 401 without an authenticated session.
 
 A final human browser pass is still required for completing Google consent/callback and signing in with the examiner account to exercise private CRUD, booking, JWT-cookie refresh, wishlist and invoice-download interactions. Do not represent those account-interactive flows as browser-tested until they have been completed.
+
+
+## Studio image uploads
+
+The Add Studio form supports both a hosted image URL and a local image upload. Local uploads are handled by the authenticated Next.js route `/api/upload`, which forwards the file to ImgBB without exposing the API key in the browser.
+
+To enable local uploads in production:
+
+1. Create an ImgBB API key at https://api.imgbb.com/.
+2. In the Vercel **as-frontend** project, add `IMGBB_API_KEY` as a Sensitive environment variable for Production (and Preview/Development when needed).
+3. Redeploy the frontend after saving the variable.
+
+Only image files are accepted, with a maximum upload size of 32,000,000 bytes. The supported file picker formats are JPEG, PNG and WebP. The API key must remain server-side; do not rename it to a `NEXT_PUBLIC_*` variable. Pasting an already-hosted image URL remains available when uploads are not configured.
