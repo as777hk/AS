@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">StudioSpace mark</title>
-  <rect x="2" y="2" width="60" height="60" rx="18" fill="#191d1a"/>
-  <path d="M13 46V28c0-10.5 8.5-19 19-19s19 8.5 19 19v18h-8V28a11 11 0 0 0-22 0v18z" fill="#f4f1eb"/>
-  <path d="M23 46V29a9 9 0 0 1 18 0v17z" fill="#df5a43"/>
-  <path d="M11 50h42" stroke="#f4f1eb" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="#191d1a"/>
+  <g fill="none" stroke="#f4f1eb" stroke-width="3.2" stroke-linecap="round">
+    <path d="M15 24V15h9M40 15h9v9M49 40v9h-9M24 49h-9v-9"/>
+  </g>
+  <path d="M42 25c-3.1-4.4-14.7-5.3-18.4 1.1-3.8 6.7 5.4 9 10.8 10.9 5.1 1.8 6.5 7.5 2.4 11.3-4.2 3.9-12.4 2.8-16-1.1"
+    fill="none" stroke="#df5a43" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
