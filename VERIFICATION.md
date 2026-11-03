@@ -4,8 +4,8 @@
 
 - The public frontend/full-stack repository is https://github.com/samscaleup777/AS.
 - The public, separate Express backend repository is https://github.com/samscaleup777/AS-backend.
-- The frontend repo now exposes 34 normal source files below `client/src/`, along with package/build configuration. The original `client/.source/` archive shards remain because Vercel's install command reconstructs the source before applying `client/patch-auth.mjs`.
-- The frontend commit history exceeds the requirement for 15 meaningful client commits, with substantive code changes for booking availability, wishlist persistence, form validation, responsive menu state, accessible dialogs/status, image loading and source/Terms fixes. The backend commit history exceeds the requirement for 8 meaningful server commits, with API root/health, MongoDB, JWT, Studio CRUD/availability, booking lifecycle/collision, wishlist, newsletter, tests and deployment work.
+- The frontend repo exposes readable application source below `client/src/`; Vercel reconstructs the complete frontend from `client/.source/` archive shards and then applies `client/patch-auth.mjs` before installing and building. The patch script is the authoritative place for build-time homepage, brand and upload customisations.
+- The frontend has 79 commits and the backend has 26 commits, exceeding the assignment minimums of 15 client and 8 server commits. Feature history includes booking availability, wishlist persistence, studio CRUD, authentication, validation, responsive UI, accessible dialogs, the new visual identity and image-upload route.
 - MongoDB Atlas cluster `AnnikaCluster`, database `studiospace`.
 - Dedicated Atlas API user `studiospace_api` has only `readWrite` access to the `studiospace` database. Its URI is stored as a Sensitive Vercel environment value.
 - Six illustrative demo studio documents exist in the `studios` collection, assigned to `examiner@studiospace.demo`.
@@ -16,7 +16,7 @@
 - Frontend: Vercel project `as-frontend`, Next.js, Node 22, GitHub repo `samscaleup777/AS`, stable URL https://as-kappa-six.vercel.app.
 - Backend: Vercel project `as`, Express, Node 22, GitHub repo `samscaleup777/AS-backend`, stable URL https://as-two-lac.vercel.app.
 - The obsolete Vercel `as-api` project is no longer present. The project list contains only `as` and `as-frontend`.
-- Latest frontend source build includes the clean UTF-8 Terms page fix and generates 13/13 static pages; latest deployment is being checked against the latest source/docs commit.
+- The brand-refresh frontend build for commit `93878749db1a49264816b5b160a8b4933a13cef5` compiled successfully; TypeScript passed and the production deployment reached `READY`. The new route `/api/upload` is present in the production route list. README, logo asset and brand-guide commits are queued for a follow-up deployment.
 - Backend production build is `READY`.
 
 ## Live endpoint checks
