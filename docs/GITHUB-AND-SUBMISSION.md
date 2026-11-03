@@ -26,7 +26,7 @@ The Login page includes an examiner autofill control. These are public assessmen
 
 ## GitHub commit requirements
 
-The client repo currently has 70 commits and contains more than 15 substantive frontend code changes. The separate backend repo has 26 commits, exceeding the requirement for 8 meaningful backend commits.
+The client repo contains more than 15 substantive frontend code commits. The separate backend repo contains more than 8 substantive backend code commits.
 
 ## Google OAuth
 
