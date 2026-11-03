@@ -1,0 +1,7 @@
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import { Instagram, Linkedin, Facebook } from "lucide-react";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
+export function Footer(){const [email,setEmail]=useState("");const [busy,setBusy]=useState(false);async function subscribe(e:React.FormEvent){e.preventDefault();setBusy(true);try{const result=await api.newsletter(email);toast.success(result.message);setEmail("")}catch(error){toast.error(error instanceof Error?error.message:"Could not subscribe")}finally{setBusy(false)}}return <footer className="site-footer"><div className="container footer-grid"><div><Link href="/" className="brand footer-brand"><span className="brand-mark">S</span><span>studio<span className="brand-accent">space</span><small>CREATIVE SPACES, SHARED</small></span></Link><p className="muted footer-copy">A thoughtful marketplace connecting ambitious creators with the spaces that bring their best work to life.</p><div className="socials"><a href="https://www.instagram.com" aria-label="Instagram"><Instagram/></a><a href="https://www.linkedin.com" aria-label="LinkedIn"><Linkedin/></a><a href="https://www.facebook.com" aria-label="Facebook"><Facebook/></a><a href="https://x.com" aria-label="X"><strong className="x-logo">ùïè</strong></a></div></div><div><h4>Explore</h4><Link href="/studios">All studios</Link><Link href="/studios?category=Photo%20Studio">Photo studios</Link><Link href="/studios?category=Sound%20Sta∂ªßq´^

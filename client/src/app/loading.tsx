@@ -1,0 +1,1 @@
+export default function Loading(){return <div className="container section"><div className="skeleton-hero"/><div className="studio-grid">{Array.from({length:3}).map((_,i)=><div className="skeleton-card" key={i}/>)}</div></div>}
