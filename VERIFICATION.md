@@ -2,33 +2,33 @@
 
 ## Verified
 
-- Client source archive and server source archive integrity checks passed before publishing.
+- Client and backend source archive integrity checks passed before publishing.
 - Booking rules unit suite: 4/4 isolated tests passed (date validation, time validation, overlap and amount/duration).
-- MongoDB Atlas project/cluster: `AnnikaCluster` in Project 0; database `studiospace`.
-- Dedicated Atlas API database user `studiospace_api` has only `readWrite` access to `studiospace`; its connection URI is stored as a sensitive Vercel environment variable.
-- Six demo studio listings were inserted and verified in `studios`, assigned to `examiner@studiospace.demo`.
+- MongoDB Atlas: `AnnikaCluster`, database `studiospace`.
+- Dedicated Atlas API user `studiospace_api` has only `readWrite` access to `studiospace`; its connection URI is stored as a sensitive Vercel environment variable.
+- Six demo studio listings exist in `studios`, assigned to `examiner@studiospace.demo`.
 - Examiner user record exists in Better Auth's `user` collection.
-- GitHub backend repo is public: https://github.com/samscaleup777/AS-backend. It contains readable Express TypeScript source, API routes, environment template and tests; the history contains 22 commits.
-- GitHub client/full-stack repo is public: https://github.com/samscaleup777/AS. Its history contains 26 commits; feature-specific meaning should still be checked against the assignment's requirement for 15 meaningful client commits.
+- Public backend repository: https://github.com/samscaleup777/AS-backend. It contains readable Express TypeScript source, API routes, environment template and tests; the history contains 25 commits.
+- Public frontend/full-stack repository: https://github.com/samscaleup777/AS. The history contains 53 commits, including 19 recent code commits for UX, accessibility, validation and image loading.
 - Vercel backend project `as`, Express, Node 22, linked to `samscaleup777/AS-backend`; latest Production deployment is `READY`.
 - Vercel frontend project `as-frontend`, Next.js, Node 22, linked to `samscaleup777/AS`; latest Production deployment is `READY`, TypeScript passed and 13/13 static pages were generated.
 - Frontend stable origin: `https://as-kappa-six.vercel.app`; backend stable domain: `https://as-two-lac.vercel.app`.
+- `GET /` on the backend returns HTTP 200 with API status and endpoint directory.
 - `GET /health`: HTTP 200.
-- `GET /api/studios/featured`: HTTP 200, returns six sample records.
-- `GET /api/server/studios/featured` via the frontend proxy: HTTP 200.
+- `GET /api/studios/featured`: HTTP 200 with six sample records.
+- `GET /api/studios/:id/availability?date=YYYY-MM-DD`: HTTP 200 with confirmed occupied windows; malformed calendar date returns HTTP 400.
+- Frontend proxy `GET /api/server/studios/featured`: HTTP 200.
+- Frontend proxy availability lookup: HTTP 200.
 - `GET /api/auth/jwks`: HTTP 200.
 - `GET /api/auth/get-session`: HTTP 200 with `null` for a logged-out request.
-- The Terms page is included in the latest frontend build; 404 illustration and footer category updates are included via the build-time source patch.
-- Earlier Better Auth runtime error log belongs to the previous deployment; the latest frontend deployment had no matching runtime errors in its checked window.
+- The Latest frontend build includes the Terms page, host responsibility and creator-support copy, footer category links, custom 404 illustration, availability display, persisted wishlist state, accessible dialogs and validation/image-loading updates.
 
 ## Remaining before final submission
 
 - Google OAuth credentials are not configured. Create a Web OAuth client and add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to Vercel project `as-frontend`.
-- Browser end-to-end tests still need a human browser pass: sign in, verify HTTPOnly JWT cookie, private-route reload, add/edit/delete studio, booking creation/cancellation, host confirmation, confirmed-overlap rejection, wishlist, PDF invoice, theme toggle and mobile layout.
-- The GitHub client repo has 26 total commits, but not all are feature-specific. The requirement explicitly calls for 15 meaningful frontend commits; review the commit history or add substantive feature commits rather than treating setup/documentation commits as feature work.
-- Backend history has more than 20 commits, including backend-specific API, MongoDB, JWT, CRUD, bookings, wishlist, newsletter, tests and deployment work.
-- Host Guarantee/Creator Support copy is deliberately cautious: StudioSpace does not claim to provide insurance, independent host verification or 24/7 human support. A real platform would need those services before advertising them as guarantees.
-- Availability collisions are enforced server-side for Confirmed bookings; a dedicated calendar UI showing occupied slots before the user submits is not yet verified.
-- Image URL fields are supported; no third-party image-upload provider is configured.
+- Human browser QA is still needed: examiner sign-in, confirm that the HttpOnly JWT cookie is present, refresh private routes, create/edit/delete studio, booking request/cancellation, host confirmation, overlapping confirmed booking rejection, wishlist, PDF invoice, theme toggle and mobile layout.
+- URL-based cover and gallery images are supported. No separate ImgBB/Postimage upload provider is configured; add a provider API key only if direct file upload is required by the instructor.
+- Host Guarantee copy is transparent: the application exposes account-linked host identity, liability/coverage guidance, equipment safety information and 24/7 self-service booking access. It does not falsely claim insurance coverage, independent background checks or 24/7 staffed human support.
+- Confirmed-slot availability is shown in the booking modal and enforced server-side. Availability times are currently returned in UTC.
 
-Do not describe the platform as fully production-tested until the remaining manual checks are complete.
+Do not describe the project as fully production-tested until Google OAuth and the final authenticated browser QA are complete.
