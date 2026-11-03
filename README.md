@@ -1,12 +1,12 @@
 # StudioSpace — B14-A8-Cat_Harry
 
-A full-stack peer-to-peer creative workspace and production studio marketplace. Hosts publish studios; creators discover spaces and request bookings.
+A full-stack peer-to-peer creative workspace and production studio marketplace. Hosts publish creative spaces; creators discover studios and request bookings.
 
-## Source layout and build bootstrap
+## Source layout and local setup
 
-The client source is stored in Git as base64 shards under `client/.source`. The deployment install command extracts those files before installing and building the Next.js app. The standalone Express API has a separate, readable source repository: [AS-backend](https://github.com/samscaleup777/AS-backend).
+The client source is stored as base64 shards under `client/.source`; the Vercel install command extracts the source before building the Next.js application.
 
-To reconstruct the client locally:
+Reconstruct the frontend locally:
 
 ```bash
 cd client
@@ -15,16 +15,26 @@ npm install
 npm run dev
 ```
 
-For the API, clone [AS-backend](https://github.com/samscaleup777/AS-backend), copy `.env.example` to `.env`, configure the values, then run `npm install && npm run dev`.
+The Express backend is maintained as a separate readable repository: [AS-backend](https://github.com/samscaleup777/AS-backend).
 
-## Assignment features
+```bash
+git clone https://github.com/samscaleup777/AS-backend.git
+cd AS-backend
+cp .env.example .env
+# Configure MONGODB_URI, MONGODB_DB, AUTH_BASE_URL and CLIENT_ORIGIN
+npm install
+npm run dev
+```
 
-- Three-slide Swiper hero, six dynamic featured studios, five category filters, homepage section anchors and responsive navigation/footer.
-- Better Auth email/password registration and login, Google OAuth when credentials are configured, callback-route preservation and examiner auto-fill.
-- Public studio discovery/details, image gallery, host details, reviews display, owner-only add/edit/delete and read-only host identity.
-- Booking modal with server-side price calculation, Pending workflow, customer cancellation, host status management and confirmed-time overlap prevention.
-- JWT validation in an HTTPOnly cookie for Express mutations, Light/Dark mode, saved studios and confirmed-booking PDF invoice.
-- Loading skeletons, custom 404, empty states, Sonner toasts and custom confirmation dialogs.
+## Features
+
+- Three-slide Swiper hero, six live featured studios, five category filters, homepage anchors and responsive navigation/footer.
+- Better Auth email/password registration and login, Google OAuth support when provider credentials are configured, callback return and examiner auto-fill.
+- Public studio discovery/details, image gallery, amenities, host details, review display, and owner-only create/edit/delete.
+- Booking requests with server-calculated totals, Pending/Confirmed/Completed/Cancelled states and confirmed-time collision prevention.
+- JWT verification through an HTTPOnly cookie for protected Express routes.
+- Global Light/Dark theme, saved-studio wishlist and downloadable PDF invoice for confirmed bookings.
+- Skeleton loading, empty states, Sonner toast notifications, custom confirmation flows and illustrated 404 page.
 
 ## Technology
 
@@ -34,30 +44,37 @@ Next.js App Router, React, TypeScript, Tailwind CSS, Better Auth, MongoDB adapte
 
 - **Frontend:** https://as-kappa-six.vercel.app
 - **Backend API:** https://as-two-lac.vercel.app
-- **Health check:** https://as-two-lac.vercel.app/health
+- **API health check:** https://as-two-lac.vercel.app/health
 - **Frontend Vercel project:** `as-frontend`
 - **Backend Vercel project:** `as`
 
-The latest frontend and backend Vercel builds are marked `READY`. Database-backed routes still require the Atlas connection string to be added to the new `as` backend project's environment.
+Both latest Production builds are marked `READY`. The backend health endpoint has returned HTTP 200, the featured-studios API has returned HTTP 200 with six sample listings, and the frontend API proxy has also returned HTTP 200.
+
+## Examiner credentials
+
+- **Email:** `examiner@studiospace.demo`
+- **Password:** `StudioSpace!2026`
+
+The examiner account has been created in the StudioSpace database. The Login page's examiner auto-fill control is also configured for this account. These are public assignment-demo credentials, not private production credentials.
+
+## Sample data
+
+Six clearly named demo studio listings have been inserted into the `studiospace` database and belong to the examiner account. They are illustrative sample entries and should be replaced or edited for a real marketplace.
 
 ## Environment configuration
 
-Frontend Vercel variables include `BETTER_AUTH_URL`, `NEXT_PUBLIC_SITE_URL`, `API_SERVER_URL`, `MONGODB_URI`, `MONGODB_DB` and `BETTER_AUTH_SECRET`. Add Google OAuth web credentials to enable Google sign-in.
+Frontend Vercel project `as-frontend` contains the Better Auth base URL and secret, frontend site URL, API server URL, MongoDB URI and database name. Google OAuth still requires a Web OAuth client ID and secret.
 
-Backend variables: `MONGODB_URI` (sensitive), `MONGODB_DB=studiospace`, `AUTH_BASE_URL=https://as-kappa-six.vercel.app`, `CLIENT_ORIGIN=https://as-kappa-six.vercel.app` and `NODE_ENV=production`.
+Backend Vercel project `as` has a separate sensitive MongoDB connection string using a dedicated Atlas user with `readWrite` permission on the `studiospace` database only. It also has `MONGODB_DB=studiospace`, `AUTH_BASE_URL`, `CLIENT_ORIGIN` and `NODE_ENV=production`.
 
-Never commit real credentials.
+Never commit database credentials, OAuth secrets or private production credentials.
 
-## Examiner login
-
-Login auto-fill is configured for the assessment-only account `examiner@studiospace.demo`. The account itself must still be created after the auth/database configuration is complete, using the included examiner creation script. Set and retain its password only in the private deployment environment; do not publish real credentials.
-
-## GitHub and submission
+## Submission links
 
 - Client/full-stack repository: https://github.com/samscaleup777/AS
 - Separate backend repository: https://github.com/samscaleup777/AS-backend
 - Live client website: https://as-kappa-six.vercel.app
 
-## Verification status
+## Verification notes
 
-The Express backend TypeScript build and the Next.js frontend production build are both marked `READY`. The isolated booking-rules suite has 4 passing tests. Full live database connectivity, OAuth sign-in, examiner-account creation and browser end-to-end tests still need to be completed before describing the project as fully verified. The client repository's 15 meaningful feature commits also need a final commit-history review; the backend repository already has more than 8 backend-specific commits.
+Production builds and live public API/featured-listing endpoints have passed checks. The JWKS endpoint and unauthenticated session endpoint returned HTTP 200. The isolated booking-rules unit tests passed 4/4. A full browser end-to-end check of sign-in, JWT-cookie protected mutations, booking collision, Google OAuth and responsive interactions remains part of final manual QA.
