@@ -1,82 +1,92 @@
 # StudioSpace — B14-A8-Cat_Harry
 
-A full-stack peer-to-peer creative workspace and production studio marketplace. Hosts publish creative spaces; creators discover studios and request bookings.
+StudioSpace is a peer-to-peer creative workspace and production studio marketplace. Hosts list spaces for photography, film, podcasts, music and art; creators discover studios and request bookings.
 
-## Source layout and local setup
+## Live application
 
-The client source is stored as base64 shards under `client/.source`; the Vercel install command extracts the source before building the Next.js application.
+- **Frontend:** https://as-kappa-six.vercel.app
+- **Backend API:** https://as-two-lac.vercel.app
+- **API status:** https://as-two-lac.vercel.app/
+- **API health:** https://as-two-lac.vercel.app/health
 
-Reconstruct the frontend locally:
+## GitHub repositories
+
+- **Client/full-stack:** https://github.com/samscaleup777/AS
+- **Separate backend:** https://github.com/samscaleup777/AS-backend
+
+The Next.js frontend source is readable under `client/src/`. The repository also retains deterministic source archive shards under `client/.source/` because the Vercel install step reconstructs the original source and applies the checked-in `client/patch-auth.mjs` build transformations before installing and building. The Express backend is maintained in its own repository with readable TypeScript files.
+
+## Main features
+
+- Three-slide Swiper landing hero, six dynamic featured studios, five category filters and responsive navigation with homepage hash links.
+- Better Auth email/password sign-up and login, Google OAuth provider, callback route preservation and examiner demo autofill.
+- Public studio directory and details with image gallery, specifications, amenities, host profile and reviews display.
+- Private studio creation, owner-only editing and deletion, read-only host identity, input validation and confirmation dialogs.
+- Booking requests with server-calculated hours and totals, Pending/Confirmed/Completed/Cancelled status flow, pending cancellation and confirmed-slot overlap prevention.
+- Date-specific availability lookup; already-confirmed time windows are shown in the booking modal before a request is sent.
+- JWT signature verification via JWKS and an HTTPOnly cookie for protected Express routes.
+- Global Light/Dark theme, persistent saved-studio wishlist and downloadable PDF invoice for confirmed bookings.
+- Newsletter subscription, loading skeletons, empty states, Sonner notifications, Terms page and custom illustrated 404.
+
+## Technology stack
+
+Next.js App Router, React 19, TypeScript, Tailwind CSS, Better Auth, MongoDB adapter, Express 5, MongoDB, Zod, jose, Swiper, next-themes, Sonner and jsPDF 4.2.1.
+
+## Local setup
+
+### Frontend
 
 ```bash
 cd client
-cat .source/client-*.b64 | base64 -d | tar -xz --strip-components=1
 npm install
 npm run dev
 ```
 
-The Express backend is maintained as a separate readable repository: [AS-backend](https://github.com/samscaleup777/AS-backend).
+Create a `.env.local` with local values for `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `MONGODB_URI`, `MONGODB_DB`, `NEXT_PUBLIC_SITE_URL`, `API_SERVER_URL`, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The frontend expects the API to be reachable at `API_SERVER_URL`.
+
+### Backend
 
 ```bash
 git clone https://github.com/samscaleup777/AS-backend.git
 cd AS-backend
 cp .env.example .env
-# Configure MONGODB_URI, MONGODB_DB, AUTH_BASE_URL and CLIENT_ORIGIN
 npm install
 npm run dev
 ```
 
-## Features
+Set `MONGODB_URI`, `MONGODB_DB=studiospace`, `AUTH_BASE_URL` (the frontend origin) and `CLIENT_ORIGIN` (the frontend origin). The local API listens on port 4000 by default.
 
-- Three-slide Swiper hero, six live featured studios, five category filters, homepage anchors and responsive navigation/footer.
-- Better Auth email/password registration and login, Google OAuth integration point, callback return and examiner auto-fill.
-- Public studio discovery/details, image gallery, amenities, host details, review display, and owner-only create/edit/delete.
-- Booking requests with server-calculated totals, Pending/Confirmed/Completed/Cancelled states, confirmed-time collision prevention and a date-specific availability lookup.
-- JWT verification through an HTTPOnly cookie for protected Express routes.
-- Global Light/Dark theme, saved-studio wishlist and downloadable PDF invoice for confirmed bookings.
-- Skeleton loading, empty states, Sonner toast notifications, accessible confirmation dialogs, Terms page and illustrated 404.
-- Responsive form validation, lazy-loaded images and accessible search/filter controls.
+Run backend compilation and booking rule tests:
 
-## Technology
+```bash
+npm run build
+npm test
+```
 
-Next.js App Router, React, TypeScript, Tailwind CSS, Better Auth, MongoDB adapter, Express.js, MongoDB, Zod, jose, Swiper, next-themes, Sonner and jsPDF.
-
-## Live deployment
-
-- **Frontend:** https://as-kappa-six.vercel.app
-- **Backend API:** https://as-two-lac.vercel.app
-- **API status:** https://as-two-lac.vercel.app/
-- **API health check:** https://as-two-lac.vercel.app/health
-- **Frontend Vercel project:** `as-frontend`
-- **Backend Vercel project:** `as`
-
-Both latest application Production builds are marked `READY`. Live checks have returned HTTP 200 for the API root, health, featured studios, date-specific availability, frontend API proxy, Better Auth JWKS and frontend public pages.
-
-## Examiner credentials
+## Examiner account
 
 - **Email:** `examiner@studiospace.demo`
 - **Password:** `StudioSpace!2026`
 
-The examiner account exists in the StudioSpace database. The Login page includes the examiner auto-fill control. These are public assignment-demo credentials, not private production credentials.
+The examiner account has been created in the assessment database. The Login page includes examiner autofill. These are public assessment-demo credentials and must not be reused for a real service.
 
-## Sample data
+## Sample database data
 
-Six clearly named demo studio listings have been inserted into the `studiospace` database and belong to the examiner account. They are illustrative sample entries and should be replaced or edited for a real marketplace.
+Six illustrative sample studio listings are present in the `studiospace` database. All six are demo entries assigned to the examiner account; they are sample content, not verified real-world businesses.
 
-## Environment configuration
+## Deployment projects
 
-Frontend Vercel project `as-frontend` contains the Better Auth base URL and secret, frontend site URL, API server URL, MongoDB URI and database name. Google OAuth still requires a Web OAuth client ID and secret.
+- Vercel **`as-frontend`**: Next.js frontend, connected to `samscaleup777/AS`.
+- Vercel **`as`**: Express backend, connected to `samscaleup777/AS-backend`.
 
-Backend Vercel project `as` has a separate sensitive MongoDB connection string using a dedicated Atlas user with `readWrite` permission on the `studiospace` database only. It also has `MONGODB_DB=studiospace`, `AUTH_BASE_URL`, `CLIENT_ORIGIN` and `NODE_ENV=production`.
+The obsolete `as-api` project has been removed. Keep the frontend and backend projects separate.
 
-Never commit database credentials, OAuth secrets or private production credentials.
+## Verification status
 
-## Submission links
+- Latest frontend Production deployment: `READY`; Next.js production build and TypeScript pass, 13/13 static pages are generated.
+- Latest clean-source ESLint run: 0 errors and 7 non-blocking `@next/next/no-img-element` warnings for dynamically supplied images.
+- Backend TypeScript build passes; isolated booking rule suite passes 4/4 tests.
+- Production dependency audit reports zero production vulnerabilities after the jsPDF 4.2.1 upgrade. Sixteen moderate findings remain in development-only lint tooling.
+- Live checks have returned HTTP 200 for frontend pages, API root, API health, featured studios, availability lookup, frontend API proxy and Better Auth JWKS. Protected routes correctly return HTTP 401 without an authenticated session.
 
-- Client/full-stack repository: https://github.com/samscaleup777/AS
-- Separate backend repository: https://github.com/samscaleup777/AS-backend
-- Live client website: https://as-kappa-six.vercel.app
-
-## Verification notes
-
-The public client repository has 53 commits; 19 recent frontend commits add specific UX, form-validation, accessibility and image-loading changes. The separate backend repository has 25 commits. The isolated booking-rules test suite passes 4/4. Production builds and live public routes have passed checks. Google OAuth setup and a human browser end-to-end pass of authenticated sign-in, protected mutations, bookings and responsive interactions are still required before describing the entire project as fully verified.
+A final human browser pass is still required for completing Google consent/callback and signing in with the examiner account to exercise private CRUD, booking, JWT-cookie refresh, wishlist and invoice-download interactions. Do not represent those account-interactive flows as browser-tested until they have been completed.
