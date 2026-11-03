@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">StudioSpace mark</title>
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="#191d1a"/>
+  <path d="M13 46V28c0-10.5 8.5-19 19-19s19 8.5 19 19v18h-8V28a11 11 0 0 0-22 0v18z" fill="#f4f1eb"/>
+  <path d="M23 46V29a9 9 0 0 1 18 0v17z" fill="#df5a43"/>
+  <path d="M11 50h42" stroke="#f4f1eb" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
