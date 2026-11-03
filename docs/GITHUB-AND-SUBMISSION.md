@@ -22,7 +22,7 @@ This is a public assessment-demo account. The Login page also includes the exami
 
 ## Commit requirements
 
-The assignment asks for at least 15 meaningful frontend commits and 8 meaningful backend commits. The client repository has 26 commits in total, though some are source-bundle, deployment and documentation work; those should not all be counted as feature commits. The separate backend repository has 22 commits, including backend API/auth/database/booking/wishlist/newsletter/test and deployment changes.
+The assignment asks for at least 15 meaningful frontend commits and 8 meaningful backend commits. The client repository has more than 30 commits in total, though some are source-bundle, deployment and documentation work; those should not all be counted as feature commits. The separate backend repository has more than 20 commits, including backend API/auth/database/booking/wishlist/newsletter/test and deployment changes.
 
 Do not add empty or fabricated commits. Commit substantive feature changes and review the final history against the rubric.
 
