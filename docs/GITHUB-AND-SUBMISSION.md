@@ -3,19 +3,17 @@
 ## Required assignment links
 
 1. Public client/full-stack repository: https://github.com/samscaleup777/AS
-2. Public backend repository: create `AS-server` as a separate public repository and publish the extracted `server/` folder.
-3. Live client website: use the Vercel production URL only after the project deployment is `READY`.
+2. Public backend repository: https://github.com/samscaleup777/AS-backend
+3. Live client website: https://as-kappa-six.vercel.app
 
-## Current publishing mechanism
-
-The connected GitHub integration can write blobs, trees, commits and refs to existing repositories, but does not expose a repository-creation action or a direct local-folder push action. The full application is therefore included in source bundles under `client/.source` and `server/.source`; deployment commands unpack each bundle into readable source before installing dependencies.
-
-Create the separate public API repository at https://github.com/new?name=AS-server&visibility=public, then copy the extracted `server/` application into it.
+The separate backend source is published as readable Express TypeScript files in `AS-backend`. Its Vercel project is named `as`.
 
 ## Git commit requirements
 
-The assignment requires at least 15 meaningful client commits and 8 meaningful server commits. Do not pad the history with empty or fabricated commits. Commit actual feature groups and record their pushed history in the corresponding repositories. The archive publication commit is not a substitute for the required feature-by-feature history.
+The assignment requires at least 15 meaningful client commits and 8 meaningful server commits. Do not pad history with empty or fabricated commits. Commit actual feature groups and verify the pushed history in the corresponding repositories.
+
+The backend repository currently has more than 8 backend-specific commits covering API setup, MongoDB, JWT auth, studios, bookings, wishlist, newsletter, deployment configuration and tests. The client repository's existing history still needs a final check that 15 commits represent meaningful feature work, not just source archive/configuration changes.
 
 ## README checklist
 
-The client and server READMEs must state the app name, deployed URL, five or more real features, technology stack, local setup commands and examiner test instructions. Replace placeholder live URLs only after deployment succeeds.
+Both repositories must identify StudioSpace, list five or more actual features, name the technology stack, include local setup instructions and explain how to test the examiner account. Use the deployed website URL above; never publish secrets or real passwords.
