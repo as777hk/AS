@@ -1,48 +1,63 @@
 # StudioSpace deployment guide
 
-## Vercel client
+## Vercel frontend
 
-The project `as` is already configured with the `client` root directory, Next.js framework, Node.js 22 and an archive-extraction install command. Once source shards are committed, the first Vercel build will extract `client/.source/client-*.b64` and run `npm install`.
+- Project: `as-frontend`
+- Framework: Next.js
+- Live origin: https://as-kappa-six.vercel.app
+- Repository: https://github.com/samscaleup777/AS
+- The install command extracts the client source shards from `.source/client-*.b64` before installing dependencies and building.
 
 Environment variables:
-- `MONGODB_URI`: dedicated StudioSpace database connection (already configured as a sensitive Vercel variable).
-- `MONGODB_DB=studiospace` (already configured).
-- `BETTER_AUTH_SECRET`: sensitive random secret (already configured).
-- `BETTER_AUTH_URL`: exact production frontend origin, e.g. `https://as-<team>.vercel.app`.
-- `NEXT_PUBLIC_SITE_URL`: same exact frontend origin.
-- `API_SERVER_URL`: Render backend origin after the API service is deployed, e.g. `https://studiospace-api.onrender.com`.
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: create a Google OAuth Web application and add callback `https://<frontend-origin>/api/auth/callback/google`.
-- `NEXT_PUBLIC_EXAMINER_EMAIL` / `NEXT_PUBLIC_EXAMINER_PASSWORD`: assessment-only auto-fill values already configured. The user must still be created with the supplied script after deployment.
+- `MONGODB_URI`: sensitive MongoDB Atlas URI (already configured on the frontend project).
+- `MONGODB_DB=studiospace`.
+- `BETTER_AUTH_SECRET`: sensitive Better Auth secret (already configured).
+- `BETTER_AUTH_URL=https://as-kappa-six.vercel.app`.
+- `NEXT_PUBLIC_SITE_URL=https://as-kappa-six.vercel.app`.
+- `API_SERVER_URL=https://as-two-lac.vercel.app`.
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: required to enable Google sign-in.
+- `NEXT_PUBLIC_EXAMINER_EMAIL`, `NEXT_PUBLIC_EXAMINER_PASSWORD`: assessment-only auto-fill values; create the actual examiner user after auth is working.
 
-After changing environment values, trigger a new deployment.
+## Vercel backend
 
-## Render API
+- Project: `as`
+- Framework: Express
+- Repository: https://github.com/samscaleup777/AS-backend
+- Node.js: 22.x
+- Backend domain: https://as-two-lac.vercel.app
+- Health endpoint: https://as-two-lac.vercel.app/health
 
-The root `render.yaml` defines the Express web service with root directory `server`. Render's build command unpacks `server/.source/server-*.b64` before installing and compiling.
+Environment variables:
+- `MONGODB_URI`: add the same Atlas URI as a sensitive variable in the new `as` project.
+- `MONGODB_DB=studiospace`.
+- `AUTH_BASE_URL=https://as-kappa-six.vercel.app`.
+- `CLIENT_ORIGIN=https://as-kappa-six.vercel.app`.
+- `NODE_ENV=production`.
 
-Set these service variables in Render:
-- `NODE_ENV=production`
-- `MONGODB_URI`: same dedicated MongoDB connection (set as a secret; do not place it in a public file).
-- `MONGODB_DB=studiospace`
-- `AUTH_BASE_URL`: same exact origin as `BETTER_AUTH_URL`.
-- `CLIENT_ORIGIN`: same exact frontend origin as `BETTER_AUTH_URL`.
-- `PORT`: supplied automatically by Render.
+The non-secret backend values are already configured. The database URI is the remaining backend environment value to add. Redeploy after changing environment variables.
 
-Deploy the Render service and copy its public HTTPS URL into Vercel's `API_SERVER_URL`.
+## Google OAuth setup
+
+In Google Cloud Console, create an OAuth 2.0 Client ID of type Web application. Add the frontend origin to Authorized JavaScript origins and this callback to Authorized redirect URIs:
+
+`https://as-kappa-six.vercel.app/api/auth/callback/google`
+
+Copy the Client ID and Client Secret into the frontend Vercel project's `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` variables (sensitive), then redeploy the frontend.
 
 ## MongoDB
 
-A free Atlas cluster is already available in the connected Atlas account. A dedicated `studiospace_app` database user was created with `readWrite` on only the `studiospace` database. Collections created: `studios`, `bookings`, `bookingLocks`, `wishlists`, `newsletters`, `reviews`. The Express application creates required indexes when it first connects.
+Atlas database: `studiospace`. The dedicated `studiospace_app` user has `readWrite` access to that database. Collections created: `studios`, `bookings`, `bookingLocks`, `wishlists`, `newsletters`, `reviews`. The Express application creates indexes on first connection.
 
 ## Final checks
 
-1. Confirm the Express `/health` endpoint returns success.
-2. Complete an email/password registration and log in; refresh `/my-listings` and `/my-bookings`.
-3. Test add/edit/delete studio with a second user to verify ownership boundaries.
-4. Test booking calculation and Pending cancellation.
-5. Confirm one booking and attempt an overlapping confirmed slot; it must be rejected.
-6. Confirm host status management, wishlist persistence and invoice PDF.
-7. Test light/dark mode, all deep links, categories, empty states and mobile layout.
-8. Add Google OAuth credentials and verify its callback.
-9. Create the assessment-only examiner account using `client/scripts/create-examiner.mjs`.
-10. Run both production builds and the server unit tests before assignment submission.
+1. Confirm the backend `/health` endpoint returns success.
+2. Add `MONGODB_URI` and verify `/api/studios/featured` returns a data array.
+3. Complete email/password registration and log in; refresh `/my-listings` and `/my-bookings`.
+4. Test adding, editing and deleting a studio, including non-owner access denial.
+5. Test booking totals, Pending cancellation and host status updates.
+6. Confirm one booking and attempt an overlapping time slot; it must be rejected.
+7. Test wishlist persistence and confirmed-booking PDF invoice.
+8. Test light/dark mode, hash links, category filters, empty states, not-found page and mobile layout.
+9. Configure Google OAuth and verify its callback.
+10. Create the examiner account with the provided script.
+11. Confirm at least 15 meaningful frontend commits and 8 backend commits exist in the public repositories.
