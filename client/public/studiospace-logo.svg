@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="368" height="76" viewBox="0 0 368 76" role="img" aria-labelledby="title desc">
+  <title id="title">StudioSpace</title>
+  <desc id="desc">StudioSpace wordmark with an original S monogram inside a studio framing mark.</desc>
+  <g transform="translate(4 6)">
+    <rect x="2" y="2" width="60" height="60" rx="17" fill="#191d1a"/>
+    <g fill="none" stroke="#f4f1eb" stroke-width="3.2" stroke-linecap="round">
+      <path d="M15 24V15h9M40 15h9v9M49 40v9h-9M24 49h-9v-9"/>
+    </g>
+    <path d="M42 25c-3.1-4.4-14.7-5.3-18.4 1.1-3.8 6.7 5.4 9 10.8 10.9 5.1 1.8 6.5 7.5 2.4 11.3-4.2 3.9-12.4 2.8-16-1.1"
+      fill="none" stroke="#df5a43" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="82" y="39" font-family="Manrope, DM Sans, Arial, sans-serif" font-size="29" font-weight="800" letter-spacing="-1.8" fill="#191d1a">studio<tspan fill="#df5a43">space</tspan></text>
+  <text x="84" y="57" font-family="DM Sans, Arial, sans-serif" font-size="8.5" font-weight="700" letter-spacing="2" fill="#73776f">CREATIVE SPACES, SHARED</text>
+</svg>
