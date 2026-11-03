@@ -28,4 +28,4 @@ Use `client/public/studiospace-mark.svg` for the standalone mark. The horizontal
 
 ## Content voice
 
-Use direct, specific language. Describe what is included and what the visitor should do next. Avoid filler claims, fake popularity metrics, stock phrases and decorative AI-style copy.
+Use direct, specific language. Describe what is included and what the visitor should do next. Avoid filler claims, fake popularity metrics, stock phrases and decorative copy.
