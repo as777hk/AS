@@ -6,28 +6,34 @@
 2. Public separate backend repository: https://github.com/samscaleup777/AS-backend
 3. Live client website: https://as-kappa-six.vercel.app
 
-## Vercel projects
+## Source code
+
+The frontend source is readable under `client/src/`. The `client/.source/` archive shards are retained for Vercel's deterministic install/extract process. The separate Express backend is readable in the root of `AS-backend`.
+
+## Active Vercel projects
 
 - Frontend: `as-frontend` — https://as-kappa-six.vercel.app
-- Backend project requested as `AS`: `as` — https://as-two-lac.vercel.app
+- Backend requested as `AS`: `as` — https://as-two-lac.vercel.app
 
-The backend root endpoint returns an online status object and lists its main API routes. The unused older `as-api` project is separate and can be deleted from Vercel project settings.
+The obsolete `as-api` project has been removed.
 
-## Examiner account
+## Examiner demo account
 
 - Email: `examiner@studiospace.demo`
 - Password: `StudioSpace!2026`
 
-This is a public assessment-demo account. The Login page also includes an examiner auto-fill control.
+The Login page includes an examiner autofill control. These are public assessment-demo credentials only.
 
-## Commit requirements
+## GitHub commit requirements
 
-The client repository currently has 53 commits. Nineteen recent frontend commits contain code changes for image performance, saved-state accessibility, studio search/filter accessibility, registration and listing validation, accessible booking dialogs, cancellation/deletion confirmations, newsletter validation and status announcements.
+The client repo currently has 70 commits and contains more than 15 substantive frontend code changes. The separate backend repo has 26 commits, exceeding the requirement for 8 meaningful backend commits.
 
-The separate backend repository currently has 25 commits, including API root/health, database, JWT authentication, studio CRUD/availability, booking lifecycle and collision rules, wishlist, newsletter and tests.
+## Google OAuth
 
-## Remaining setup
+The frontend Vercel environment contains `GOOGLE_CLIENT_ID` and Sensitive `GOOGLE_CLIENT_SECRET` for Production, Preview and Development. Google sign-in initiation has returned HTTP 200 and a Google authorization URL with the required callback URI. Complete one real Google consent/callback in a browser before final hand-in.
 
-Google OAuth still needs a Web OAuth Client ID and Client Secret configured in the Vercel `as-frontend` project. Complete a real browser test of the examiner login, HTTPOnly JWT cookie, protected CRUD and booking workflows before final hand-in.
+## Final browser checks
 
-Never commit Atlas URIs, OAuth secrets or private production credentials.
+Use the examiner account to test session persistence on private-route refresh, studio CRUD ownership, booking creation/cancellation/host confirmation, overlapping confirmed-booking rejection, wishlist persistence, PDF invoice, theme switching and mobile navigation. Do not represent these user-interactive checks as complete until performed.
+
+Never publish MongoDB URIs, OAuth secrets or other private credentials.
