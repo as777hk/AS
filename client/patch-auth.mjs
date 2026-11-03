@@ -156,7 +156,7 @@ const packageJsonPath = "package.json";
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 if (packageJson.dependencies?.jspdf !== "4.2.1") {
   packageJson.dependencies = { ...packageJson.dependencies, jspdf: "4.2.1" };
-  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\\n");
+  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n");
 }
 
 console.log("StudioSpace frontend assignment patches applied.");
