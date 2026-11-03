@@ -135,4 +135,5 @@ export default function TermsPage() {
 }
 replaceOnce("src/components/studio-card.tsx", "<img src={studio.imageUrl || \"https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900\"} alt={studio.title}/>", "<img src={studio.imageUrl || \"https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900\"} alt={studio.title} loading=\"lazy\" decoding=\"async\"/>", "Improve studio card image loading");
 replaceOnce("src/components/studio-card.tsx", "<button className={liked?\"save-button saved\":\"save-button\"} aria-label=\"Save studio\" onClick={toggle}>", "<button className={liked?\"save-button saved\":\"save-button\"} aria-label={liked?\"Remove saved studio\":\"Save studio\"} aria-pressed={liked} onClick={toggle}>", "Expose wishlist button state accessibly");
+replaceOnce("src/app/studios/studios-client.tsx", "<input placeholder=\"Search by name or location\" value={q} onChange={e=>setQ(e.target.value)}/>", "<input aria-label=\"Search studios by name or location\" placeholder=\"Search by name or location\" value={q} onChange={e=>setQ(e.target.value)}/>", "Label studio search field");
 console.log("StudioSpace frontend assignment patches applied.");
