@@ -29,12 +29,13 @@ npm run dev
 ## Features
 
 - Three-slide Swiper hero, six live featured studios, five category filters, homepage anchors and responsive navigation/footer.
-- Better Auth email/password registration and login, Google OAuth support when provider credentials are configured, callback return and examiner auto-fill.
+- Better Auth email/password registration and login, Google OAuth integration point, callback return and examiner auto-fill.
 - Public studio discovery/details, image gallery, amenities, host details, review display, and owner-only create/edit/delete.
-- Booking requests with server-calculated totals, Pending/Confirmed/Completed/Cancelled states and confirmed-time collision prevention.
+- Booking requests with server-calculated totals, Pending/Confirmed/Completed/Cancelled states, confirmed-time collision prevention and a date-specific availability lookup.
 - JWT verification through an HTTPOnly cookie for protected Express routes.
 - Global Light/Dark theme, saved-studio wishlist and downloadable PDF invoice for confirmed bookings.
-- Skeleton loading, empty states, Sonner toast notifications, custom confirmation flows and illustrated 404 page.
+- Skeleton loading, empty states, Sonner toast notifications, accessible confirmation dialogs, Terms page and illustrated 404.
+- Responsive form validation, lazy-loaded images and accessible search/filter controls.
 
 ## Technology
 
@@ -44,18 +45,19 @@ Next.js App Router, React, TypeScript, Tailwind CSS, Better Auth, MongoDB adapte
 
 - **Frontend:** https://as-kappa-six.vercel.app
 - **Backend API:** https://as-two-lac.vercel.app
+- **API status:** https://as-two-lac.vercel.app/
 - **API health check:** https://as-two-lac.vercel.app/health
 - **Frontend Vercel project:** `as-frontend`
 - **Backend Vercel project:** `as`
 
-Both latest Production builds are marked `READY`. The backend health endpoint has returned HTTP 200, the featured-studios API has returned HTTP 200 with six sample listings, and the frontend API proxy has also returned HTTP 200.
+Both latest application Production builds are marked `READY`. Live checks have returned HTTP 200 for the API root, health, featured studios, date-specific availability, frontend API proxy, Better Auth JWKS and frontend public pages.
 
 ## Examiner credentials
 
 - **Email:** `examiner@studiospace.demo`
 - **Password:** `StudioSpace!2026`
 
-The examiner account has been created in the StudioSpace database. The Login page's examiner auto-fill control is also configured for this account. These are public assignment-demo credentials, not private production credentials.
+The examiner account exists in the StudioSpace database. The Login page includes the examiner auto-fill control. These are public assignment-demo credentials, not private production credentials.
 
 ## Sample data
 
@@ -77,4 +79,4 @@ Never commit database credentials, OAuth secrets or private production credentia
 
 ## Verification notes
 
-Production builds and live public API/featured-listing endpoints have passed checks. The JWKS endpoint and unauthenticated session endpoint returned HTTP 200. The isolated booking-rules unit tests passed 4/4. A full browser end-to-end check of sign-in, JWT-cookie protected mutations, booking collision, Google OAuth and responsive interactions remains part of final manual QA.
+The public client repository has 53 commits; 19 recent frontend commits add specific UX, form-validation, accessibility and image-loading changes. The separate backend repository has 25 commits. The isolated booking-rules test suite passes 4/4. Production builds and live public routes have passed checks. Google OAuth setup and a human browser end-to-end pass of authenticated sign-in, protected mutations, bookings and responsive interactions are still required before describing the entire project as fully verified.
