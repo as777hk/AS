@@ -51,7 +51,7 @@
 
 ## Honest feature boundaries
 
-- Studio photos can be provided by image URL. No separate ImgBB/Postimage API-key upload integration is configured; the assignment allows URL-based image input.
+- Studio photos can be supplied by URL or uploaded through the authenticated Next.js `/api/upload` route, which forwards files to ImgBB server-side. The route is implemented, but `IMGBB_API_KEY` is not present in Vercel yet, so local-file uploads will remain disabled until the user adds that secret.
 - Host information is account-linked, but the app does not run independent background checks.
 - Liability/coverage guidance and equipment safety information are shown; the platform does not itself provide insurance or liability coverage.
 - Booking records and self-service pages are available online at any time. The app does not claim to operate a staffed 24/7 human support desk.
