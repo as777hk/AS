@@ -649,3 +649,371 @@ replaceOnce("src/components/providers.tsx",
   "mount scroll restoration component");
 console.log("StudioSpace kicker cleanup, responsive fixes and reload scroll restoration applied.");
 
+
+ 
+// StudioSpace signature aperture motion system.
+// Lightweight CSS motion: no canvas, WebGL, animation package or continuously running JS loop.
+const studioSpaceMotionCss = String.raw`
+/* Signature background: a quiet aperture / studio-light field, not a generic gradient. */
+.home-refresh {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 6% 18%, rgba(223, 90, 67, .055), transparent 34%),
+    radial-gradient(ellipse at 94% 61%, rgba(129, 151, 127, .075), transparent 35%);
+}
+.home-refresh::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 27%;
+  right: -19%;
+  width: clamp(390px, 62vw, 900px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .46;
+  background:
+    repeating-radial-gradient(circle at center,
+      transparent 0 30px,
+      rgba(25, 29, 26, .055) 31px 32px,
+      transparent 33px 60px),
+    conic-gradient(from 18deg,
+      transparent 0 37%,
+      rgba(223, 90, 67, .12) 37.5% 38.3%,
+      transparent 39% 100%),
+    radial-gradient(circle, rgba(223, 90, 67, .10), transparent 68%);
+  animation: ss-aperture-turn 82s linear infinite;
+}
+.home-refresh::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 118%;
+  left: -17%;
+  width: clamp(340px, 48vw, 680px);
+  aspect-ratio: 1.35;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .28;
+  background:
+    radial-gradient(ellipse at 42% 48%, rgba(132, 153, 129, .18), transparent 68%),
+    repeating-linear-gradient(132deg,
+      transparent 0 26px,
+      rgba(25, 29, 26, .035) 27px 28px,
+      transparent 29px 54px);
+  animation: ss-field-drift 19s ease-in-out infinite alternate;
+}
+@keyframes ss-aperture-turn {
+  to { transform: rotate(360deg); }
+}
+@keyframes ss-field-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(18px, -14px, 0); }
+}
+
+/* A more tactile category surface: fine studio-grid + warm light pools. */
+.ss-category-section {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 12% 14%, rgba(223, 90, 67, .105), transparent 39%),
+    radial-gradient(ellipse at 88% 84%, rgba(132, 153, 129, .15), transparent 42%),
+    linear-gradient(132deg, #eae6dd 0%, #f2efe8 54%, #e6e9e1 100%) !important;
+}
+.ss-category-section::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  opacity: .44;
+  background-image:
+    linear-gradient(rgba(25, 29, 26, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(25, 29, 26, .035) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+}
+.ss-category-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 8%;
+  right: 4%;
+  width: clamp(190px, 27vw, 390px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(25, 29, 26, .08);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .52;
+  background:
+    repeating-radial-gradient(circle,
+      transparent 0 21px,
+      rgba(25, 29, 26, .065) 22px 23px,
+      transparent 24px 43px),
+    conic-gradient(from 24deg,
+      transparent 0 72%,
+      rgba(223, 90, 67, .13) 73% 74%,
+      transparent 75% 100%);
+  animation: ss-aperture-turn 96s linear infinite reverse;
+}
+
+/* Slow cinematic movement on the hero photography and a visible, restrained lens motif. */
+.ss-hero-panel {
+  position: relative;
+}
+.ss-hero-image {
+  transform: scale(1.045);
+  transform-origin: 52% 48%;
+  animation: ss-hero-photo-drift 15s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes ss-hero-photo-drift {
+  from { transform: scale(1.045) translate3d(-.25%, 0, 0); }
+  to { transform: scale(1.095) translate3d(.35%, -.25%, 0); }
+}
+.ss-hero-panel::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 9%;
+  right: 5%;
+  width: clamp(230px, 34vw, 500px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, .20);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .52;
+  background:
+    repeating-radial-gradient(circle,
+      transparent 0 28px,
+      rgba(255, 255, 255, .12) 29px 30px,
+      transparent 31px 56px),
+    conic-gradient(from 12deg,
+      transparent 0 76%,
+      rgba(240, 160, 140, .34) 77% 78%,
+      transparent 79% 100%);
+  mask-image: radial-gradient(circle, #000 32%, transparent 73%);
+  animation: ss-aperture-turn 74s linear infinite;
+}
+.ss-hero-content {
+  position: relative;
+  z-index: 1;
+}
+.swiper-slide-active .ss-hero-copy .ss-kicker {
+  animation: ss-copy-rise .62s cubic-bezier(.2, .72, .2, 1) both;
+}
+.swiper-slide-active .ss-hero-copy h1 {
+  animation: ss-copy-rise .72s .09s cubic-bezier(.2, .72, .2, 1) both;
+}
+.swiper-slide-active .ss-hero-copy > p:not(.ss-kicker) {
+  animation: ss-copy-rise .72s .18s cubic-bezier(.2, .72, .2, 1) both;
+}
+.swiper-slide-active .ss-hero-actions {
+  animation: ss-copy-rise .72s .27s cubic-bezier(.2, .72, .2, 1) both;
+}
+@keyframes ss-copy-rise {
+  from { opacity: 0; transform: translate3d(0, 17px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Cards and controls react with a small amount of physicality. */
+.studio-card {
+  transition:
+    transform .34s cubic-bezier(.2, .72, .2, 1),
+    box-shadow .34s ease,
+    border-color .34s ease;
+}
+.studio-card:hover {
+  transform: translate3d(0, -4px, 0);
+  border-color: rgba(223, 90, 67, .22);
+}
+.studio-card .studio-image-wrap img {
+  transition: transform .65s cubic-bezier(.2, .72, .2, 1);
+}
+.studio-card:hover .studio-image-wrap img {
+  transform: scale(1.055);
+}
+.ss-category-card {
+  transition:
+    transform .32s cubic-bezier(.2, .72, .2, 1),
+    box-shadow .32s ease,
+    border-color .32s ease,
+    background-color .32s ease;
+}
+.ss-category-card:hover {
+  transform: translate3d(0, -4px, 0);
+}
+.ss-category-arrow {
+  transition: transform .28s cubic-bezier(.2, .72, .2, 1);
+}
+.ss-category-card:hover .ss-category-arrow {
+  transform: translate3d(3px, -3px, 0);
+}
+.ss-step {
+  transition: transform .3s ease, border-color .3s ease;
+}
+.ss-step:hover {
+  transform: translate3d(0, -3px, 0);
+}
+.nav-link::after {
+  transition: transform .28s cubic-bezier(.2, .72, .2, 1);
+}
+.btn {
+  transition:
+    transform .24s ease,
+    box-shadow .24s ease,
+    background-color .24s ease,
+    border-color .24s ease;
+}
+.btn:hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+/* Scroll reveals only activate after elements enter the viewport. */
+.ss-reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity .68s cubic-bezier(.2, .72, .2, 1) var(--ss-reveal-delay, 0ms),
+    transform .68s cubic-bezier(.2, .72, .2, 1) var(--ss-reveal-delay, 0ms);
+}
+.ss-reveal.ss-in-view {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+@media (max-width: 720px) {
+  .home-refresh::before {
+    top: 39%;
+    right: -48%;
+    width: 112vw;
+    opacity: .34;
+  }
+  .home-refresh::after {
+    top: 126%;
+    left: -36%;
+    width: 88vw;
+    opacity: .19;
+  }
+  .ss-category-section::after {
+    top: 3%;
+    right: -14%;
+    width: 48vw;
+    opacity: .32;
+  }
+  .ss-hero-image {
+    animation-duration: 19s;
+  }
+  .ss-hero-panel::after {
+    top: 8%;
+    right: -17%;
+    width: 66vw;
+    opacity: .32;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-refresh::before,
+  .home-refresh::after,
+  .ss-category-section::after,
+  .ss-hero-image,
+  .ss-hero-panel::after {
+    animation: none !important;
+  }
+  .ss-reveal,
+  .ss-reveal.ss-in-view {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .studio-card,
+  .studio-card .studio-image-wrap img,
+  .ss-category-card,
+  .ss-category-arrow,
+  .ss-step,
+  .nav-link::after,
+  .btn {
+    transition: none !important;
+  }
+}
+`;
+writeFileSync(
+  "src/app/brand-refresh.css",
+  readFileSync("src/app/brand-refresh.css", "utf8") + "\n" + studioSpaceMotionCss
+);
+
+writeFileSync("src/components/scroll-motion.tsx", String.raw`"use client";
+
+import { useEffect } from "react";
+
+export function ScrollMotion() {
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!("IntersectionObserver" in window)) return;
+
+    const selector = [
+      ".ss-section-head",
+      ".ss-category-card",
+      ".ss-step",
+      ".studio-card",
+      ".ss-about-visual",
+      ".ss-about-copy",
+      ".ss-host-band-inner",
+      ".ss-principles > *"
+    ].join(",");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("ss-in-view");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -38px 0px" });
+
+    const attach = (scope: ParentNode) => {
+      const items = scope.querySelectorAll<HTMLElement>(selector);
+      items.forEach((item, index) => {
+        if (item.dataset.ssMotionReady === "true") return;
+        item.dataset.ssMotionReady = "true";
+        item.classList.add("ss-reveal");
+        item.style.setProperty("--ss-reveal-delay", String(Math.min(index % 5, 4) * 65) + "ms");
+        observer.observe(item);
+      });
+    };
+
+    attach(document);
+    const mutations = new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          if (node.matches(selector)) attach(node.parentElement ?? document);
+          else attach(node);
+        });
+      });
+    });
+    mutations.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      mutations.disconnect();
+      observer.disconnect();
+    };
+  }, []);
+
+  return null;
+}
+`);
+
+replaceOnce(
+  "src/components/providers.tsx",
+  'import { ScrollRestoration } from "@/components/scroll-restoration";',
+  'import { ScrollRestoration } from "@/components/scroll-restoration";\nimport { ScrollMotion } from "@/components/scroll-motion";',
+  "import StudioSpace scroll motion observer"
+);
+replaceOnce(
+  "src/components/providers.tsx",
+  "<><ScrollRestoration/><AuthCookieSync/>{children}<Toaster position=\"top-right\" richColors closeButton /></>",
+  "<><ScrollRestoration/><ScrollMotion/><AuthCookieSync/>{children}<Toaster position=\"top-right\" richColors closeButton /></>",
+  "mount StudioSpace scroll motion observer"
+);
+console.log("StudioSpace signature aperture motion system, responsive ambient background and lightweight scroll reveals applied.");
