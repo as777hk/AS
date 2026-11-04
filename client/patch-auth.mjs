@@ -1017,3 +1017,14 @@ replaceOnce(
   "mount StudioSpace scroll motion observer"
 );
 console.log("StudioSpace signature aperture motion system, responsive ambient background and lightweight scroll reveals applied.");
+
+
+// Prevent the StudioSpace ambient field from extending the page scroll area below the footer.
+writeFileSync(
+  "src/app/brand-refresh.css",
+  readFileSync("src/app/brand-refresh.css", "utf8") +
+    "\n/* Keep the lower ambient light field inside the homepage; never create scrollable space after the footer. */\n" +
+    ".home-refresh::after { top: auto !important; bottom: 4% !important; }\n" +
+    "@media (max-width: 720px) { .home-refresh::after { top: auto !important; bottom: 2% !important; } }\n"
+);
+console.log("StudioSpace homepage bottom overflow containment applied.");
