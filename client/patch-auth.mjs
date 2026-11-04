@@ -1169,4 +1169,291 @@ writeFileSync("src/app/about-us/page.tsx", "\"use client\";\n\nimport Link from 
 writeFileSync("src/components/scroll-motion.tsx", "\"use client\";\n\nimport { useEffect } from \"react\";\nimport { usePathname } from \"next/navigation\";\n\nexport function ScrollMotion() {\n  const pathname = usePathname();\n\n  useEffect(() => {\n    const reduceMotion = window.matchMedia(\"(prefers-reduced-motion: reduce)\");\n    if (reduceMotion.matches || !(\"IntersectionObserver\" in window)) return;\n\n    const selector = [\n      \".site-header\",\n      \".site-header .brand\",\n      \".main-nav > *\",\n      \".nav-actions > *\",\n      \"main section\",\n      \".ss-hero\",\n      \".ss-hero-panel\",\n      \".ss-hero-copy\",\n      \".ss-hero-topline\",\n      \".ss-hero-foot\",\n      \".home-refresh > section\",\n      \".ss-category-section\",\n      \".ss-featured\",\n      \".ss-about\",\n      \".ss-host-band\",\n      \".page-hero .container\",\n      \".section > .container > *\",\n      \".ss-section-head\",\n      \".ss-category-card\",\n      \".ss-step\",\n      \".studio-card\",\n      \".filter-bar\",\n      \".auth-v2-shell\",\n      \".detail-gallery > *\",\n      \".content-copy > *\",\n      \".footer-grid > *\",\n      \".ss-about-visual\",\n      \".ss-about-copy\",\n      \".ss-host-band-inner\",\n      \".ss-principles > *\"\n    ].join(\",\");\n\n    const observer = new IntersectionObserver((entries) => {\n      entries.forEach((entry) => {\n        if (!entry.isIntersecting) return;\n        entry.target.classList.add(\"ss-in-view\");\n        observer.unobserve(entry.target);\n      });\n    }, { threshold: 0.04, rootMargin: \"0px 0px -5% 0px\" });\n\n    const attach = (scope: ParentNode) => {\n      scope.querySelectorAll<HTMLElement>(selector).forEach((item, index) => {\n        if (item.dataset.ssMotionReady === \"true\") return;\n        item.dataset.ssMotionReady = \"true\";\n        item.classList.add(\"ss-reveal\");\n        item.style.setProperty(\"--ss-reveal-delay\", String(Math.min(index % 6, 5) * 75) + \"ms\");\n        observer.observe(item);\n      });\n    };\n\n    document.querySelectorAll<HTMLElement>(selector).forEach((item) => {\n      item.classList.remove(\"ss-reveal\", \"ss-in-view\");\n      delete item.dataset.ssMotionReady;\n      item.style.removeProperty(\"--ss-reveal-delay\");\n    });\n    attach(document);\n\n    const mutations = new MutationObserver((records) => {\n      records.forEach((record) => {\n        record.addedNodes.forEach((node) => {\n          if (!(node instanceof HTMLElement)) return;\n          if (node.matches(selector)) {\n            node.classList.remove(\"ss-reveal\", \"ss-in-view\");\n            delete node.dataset.ssMotionReady;\n            attach(node.parentElement ?? document);\n          } else {\n            attach(node);\n          }\n        });\n      });\n    });\n    mutations.observe(document.body, { childList: true, subtree: true });\n\n    return () => {\n      mutations.disconnect();\n      observer.disconnect();\n    };\n  }, [pathname]);\n\n  return null;\n}\n");
 writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + "\n" + "\n/* Distinct, saturated-but-soft linear gradient cards. */\n.studio-card {\n  background: linear-gradient(135deg, #fffefa 0%, #fff0e9 48%, #edf4ee 100%) !important;\n  border: 1px solid transparent !important;\n  background-clip: padding-box !important;\n  box-shadow: 0 12px 32px rgba(42, 48, 40, .09), inset 0 1px 0 rgba(255,255,255,.8) !important;\n}\n.studio-card::before {\n  position: absolute; z-index: 1; top: 0; left: 0; right: 0; height: 4px;\n  background: linear-gradient(90deg, #df5a43 0%, #e99b79 40%, #8ea995 72%, #667e70 100%);\n  background-size: 220% 100%; content: \"\"; pointer-events: none;\n  animation: ss-card-spectrum 7s ease-in-out infinite alternate;\n}\n.studio-card .studio-card-body { position: relative; z-index: 2; }\n.studio-card .studio-image-wrap { position: relative; z-index: 2; }\n@keyframes ss-card-spectrum { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }\n.dark .studio-card {\n  background: linear-gradient(135deg, #202a24 0%, #382b2a 48%, #26372f 100%) !important;\n  border-color: rgba(244,241,233,.12) !important;\n}\n\n/* A more visible, layered moving background that remains behind all controls. */\nhtml { background: #f3f0e9; }\nbody {\n  min-height: 100vh;\n  background-color: #f3f0e9 !important;\n  background-image:\n    linear-gradient(118deg, rgba(220,99,75,.105) 0%, rgba(255,250,243,.1) 32%, rgba(128,157,136,.13) 66%, rgba(241,222,204,.1) 100%),\n    linear-gradient(32deg, rgba(246,230,218,.55), transparent 46%, rgba(222,236,224,.58));\n  background-size: 260% 260%, 220% 220%;\n  background-attachment: fixed;\n  animation: ss-body-gradient 28s ease-in-out infinite alternate;\n}\n@keyframes ss-body-gradient {\n  0% { background-position: 0% 15%, 100% 80%; }\n  50% { background-position: 72% 88%, 20% 25%; }\n  100% { background-position: 100% 15%, 0% 90%; }\n}\n.dark body {\n  background-color: #111914 !important;\n  background-image:\n    linear-gradient(118deg, rgba(209,94,74,.16) 0%, rgba(31,41,34,.18) 34%, rgba(85,125,102,.2) 69%, rgba(91,65,83,.14) 100%),\n    linear-gradient(32deg, rgba(35,45,38,.8), transparent 48%, rgba(66,54,47,.7));\n}\n.page-hero {\n  background-image:\n    linear-gradient(115deg, rgba(255,251,245,.93), rgba(249,237,228,.9) 48%, rgba(232,241,232,.93));\n  background-size: 220% 220%;\n  animation: ss-page-hero-flow 24s ease-in-out infinite alternate;\n}\n@keyframes ss-page-hero-flow {\n  from { background-position: 0% 30%; }\n  to { background-position: 100% 70%; }\n}\n.dark .page-hero {\n  background-image: linear-gradient(115deg, rgba(24,34,27,.97), rgba(48,37,36,.96) 48%, rgba(27,48,37,.97));\n}\n\n/* Visible entrance motion for headers, navigation, section titles and controls. */\n.site-header { animation: ss-header-drop .8s cubic-bezier(.18,.7,.2,1) both; }\n.site-header .brand { animation: ss-brand-enter .9s .08s cubic-bezier(.18,.7,.2,1) both; }\n.main-nav > * { animation: ss-nav-enter .65s cubic-bezier(.18,.7,.2,1) both; }\n.main-nav > *:nth-child(2) { animation-delay: .08s; }\n.main-nav > *:nth-child(3) { animation-delay: .16s; }\n.main-nav > *:nth-child(4) { animation-delay: .24s; }\n.nav-actions > * { animation: ss-nav-enter .7s .18s cubic-bezier(.18,.7,.2,1) both; }\n@keyframes ss-header-drop { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: translateY(0); } }\n@keyframes ss-brand-enter { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }\n@keyframes ss-nav-enter { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }\n\n.ss-reveal {\n  opacity: 0;\n  transform: translate3d(0, 30px, 0) scale(.99);\n  transition:\n    opacity .82s cubic-bezier(.2,.72,.2,1) var(--ss-reveal-delay, 0ms),\n    transform .82s cubic-bezier(.2,.72,.2,1) var(--ss-reveal-delay, 0ms);\n}\n.ss-reveal.ss-in-view { opacity: 1; transform: translate3d(0,0,0) scale(1); }\n.ss-section-head h2, .page-hero h1 {\n  background-image: linear-gradient(100deg, currentColor 0%, currentColor 62%, var(--ss-accent-dark) 100%);\n  background-clip: text; -webkit-background-clip: text;\n}\n.ss-section-head::after {\n  display: block; width: 68px; height: 3px; margin-top: 22px; border-radius: 99px;\n  background: linear-gradient(90deg, #df5a43, #e9a080, #8ea995);\n  content: \"\"; transform: scaleX(.25); transform-origin: left;\n  transition: transform .8s cubic-bezier(.2,.72,.2,1);\n}\n.ss-section-head.ss-in-view::after { transform: scaleX(1); }\n.ss-category-card, .ss-step, .about-value-card {\n  position: relative; overflow: hidden;\n  transition: transform .45s cubic-bezier(.2,.72,.2,1), box-shadow .45s ease, border-color .3s ease, background .3s ease;\n}\n.ss-category-card::after, .ss-step::after, .about-value-card::after {\n  position: absolute; inset: -80% auto -80% -45%; width: 32%;\n  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);\n  content: \"\"; pointer-events: none; transform: skewX(-20deg);\n}\n.ss-category-card:hover::after, .ss-step:hover::after, .about-value-card:hover::after { animation: ss-surface-shine .8s ease; }\n@keyframes ss-surface-shine { to { left: 135%; } }\n.ss-category-card:hover, .ss-step:hover, .about-value-card:hover {\n  transform: translateY(-7px);\n  box-shadow: 0 20px 42px rgba(31,42,33,.13);\n}\n.page-hero h1, .page-hero p, .page-hero .eyebrow, .page-hero .page-hero-actions {\n  animation: ss-hero-copy-in .85s cubic-bezier(.2,.72,.2,1) both;\n}\n.page-hero h1 { animation-delay: .08s; }\n.page-hero p { animation-delay: .17s; }\n.page-hero .page-hero-actions { animation-delay: .25s; }\n@keyframes ss-hero-copy-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }\n.btn, .nav-link, .studio-view-details, .auth-v2-google {\n  transition: transform .28s cubic-bezier(.2,.72,.2,1), box-shadow .28s ease, background .28s ease, border-color .28s ease;\n}\n.btn:hover, .auth-v2-google:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(38,47,39,.15); }\n\n/* New standalone information pages. */\n.how-page-note-inner, .about-page-cta-inner {\n  display: flex; align-items: center; justify-content: space-between; gap: 38px;\n  padding: clamp(28px,5vw,58px); border: 1px solid rgba(35,48,39,.1); border-radius: 24px;\n  background: linear-gradient(118deg, #fff6f0 0%, #f4eee8 48%, #edf4ee 100%);\n}\n.how-page-note-inner > div, .about-page-cta-inner > div { max-width: 720px; }\n.how-page-note h2, .about-page-cta h2 { margin: 12px 0 16px; font-size: clamp(2rem,4vw,3.2rem); }\n.how-page-note p { max-width: 650px; color: var(--ss-muted); }\n.about-page-intro-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(30px,7vw,100px); align-items: start; }\n.about-page-intro-grid h2 { margin-top: 16px; }\n.about-page-intro-grid > div:last-child { max-width: 700px; color: var(--ss-muted); }\n.about-values-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; margin-top: 38px; }\n.about-value-card {\n  min-height: 250px; padding: 28px; border: 1px solid rgba(33,45,37,.1); border-radius: 20px;\n  background: linear-gradient(145deg,#fffefa,#fff2eb 54%,#eff4ee);\n}\n.about-value-icon { display: inline-grid; width: 48px; height: 48px; place-items: center; margin-bottom: 20px; border-radius: 14px; background: linear-gradient(135deg,#f4d9cf,#e4ece3); color: #b64d3d; }\n.about-value-card h3 { margin: 0 0 12px; font-size: 1.2rem; }\n.about-value-card p { margin: 0; color: var(--ss-muted); font-size: .92rem; }\n.dark .how-page-note-inner, .dark .about-page-cta-inner, .dark .about-value-card {\n  border-color: rgba(255,255,255,.12); background: linear-gradient(118deg,#282b26,#332a29 50%,#24362c);\n}\n.dark .about-page-intro-grid > div:last-child, .dark .about-value-card p, .dark .how-page-note p { color: #c3cdc3; }\n.dark .about-value-icon { background: linear-gradient(135deg,#59403b,#34473b); color: #ffad95; }\n\n@media(max-width: 760px) {\n  .about-page-intro-grid { grid-template-columns: 1fr; gap: 14px; }\n  .about-values-grid { grid-template-columns: 1fr; }\n  .how-page-note-inner, .about-page-cta-inner { align-items: flex-start; flex-direction: column; gap: 20px; }\n  .how-page-note-inner .btn, .about-page-cta-inner .btn { width: 100%; justify-content: center; }\n}\n@media(prefers-reduced-motion: reduce) {\n  body, .page-hero, .site-header, .site-header .brand, .main-nav > *, .nav-actions > *,\n  .studio-card::before, .ss-category-card, .ss-step, .about-value-card,\n  .page-hero h1, .page-hero p, .page-hero .eyebrow, .page-hero .page-hero-actions {\n    animation: none !important; transition: none !important;\n  }\n  .ss-reveal, .ss-reveal.ss-in-view { opacity: 1 !important; transform: none !important; }\n}\n");
 console.log("StudioSpace page separation, below-form Google sign-in, linear card gradients and full-site motion applied.");
+
+writeFileSync("src/components/scroll-motion.tsx", String.raw`"use client";
+
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+
+const hoverSelector = [
+  ".site-header", ".site-header .brand", ".main-nav a", ".nav-actions a", ".nav-actions button",
+  "main section", "main section h1", "main section h2", "main section h3", "main section p",
+  "main section a", "main section button", "main section img", "main section article",
+  ".ss-hero-panel", ".ss-hero-copy", ".ss-hero-topline", ".ss-hero-foot",
+  ".ss-section-head", ".ss-category-card", ".ss-step", ".studio-card",
+  ".filter-bar", ".auth-v2-panel", ".auth-v2-visual", ".detail-gallery > *",
+  ".content-copy > *", ".footer-grid > *", ".footer-grid a", ".footer-grid button",
+  ".about-value-card", ".how-page-note-inner", ".about-page-cta-inner"
+].join(",");
+
+function hoverType(element: HTMLElement): "section" | "text" | "image" | "control" | "card" {
+  if (element.matches("main section, .page-hero, .ss-hero-panel, .auth-v2-panel, .auth-v2-visual, .how-page-note-inner, .about-page-cta-inner")) return "section";
+  if (element.matches("img, .ss-about-visual, .detail-gallery > *")) return "image";
+  if (element.matches("a, button, input, select, textarea, .nav-actions > *")) return "control";
+  if (element.matches("article, .studio-card, .ss-category-card, .ss-step, .about-value-card, .filter-bar")) return "card";
+  return "text";
+}
+
+export function ScrollMotion() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const reduceChange = () => {
+      document.body.classList.toggle("ss-motion-reduced", reduced.matches);
+    };
+    reduceChange();
+    reduced.addEventListener?.("change", reduceChange);
+
+    const revealSelector = [
+      ".site-header", ".site-header .brand", ".main-nav > *", ".nav-actions > *",
+      "main section", ".page-hero .container", ".section > .container > *",
+      ".ss-hero", ".ss-hero-panel", ".ss-hero-copy", ".ss-hero-topline", ".ss-hero-foot",
+      ".home-refresh > section", ".ss-category-section", ".ss-featured", ".ss-about", ".ss-host-band",
+      ".ss-section-head", ".ss-category-card", ".ss-step", ".studio-card", ".filter-bar",
+      ".auth-v2-shell", ".detail-gallery > *", ".content-copy > *", ".footer-grid > *",
+      ".ss-about-visual", ".ss-about-copy", ".ss-host-band-inner", ".ss-principles > *",
+      ".about-value-card", ".about-page-intro-grid > div", ".how-page-note-inner > div", ".about-page-cta-inner > div"
+    ].join(",");
+
+    let observer: IntersectionObserver | null = null;
+    const attachReveal = (scope: ParentNode) => {
+      if (reduced.matches || !("IntersectionObserver" in window) || !observer) return;
+      if (scope instanceof Element && scope.matches(revealSelector)) {
+        if (scope.dataset.ssMotionReady !== "true") {
+          scope.dataset.ssMotionReady = "true";
+          scope.classList.add("ss-reveal");
+          scope.style.setProperty("--ss-reveal-delay", "0ms");
+          observer.observe(scope);
+        }
+      }
+      scope.querySelectorAll<HTMLElement>(revealSelector).forEach((item, index) => {
+        if (item.dataset.ssMotionReady === "true") return;
+        item.dataset.ssMotionReady = "true";
+        item.classList.add("ss-reveal");
+        item.style.setProperty("--ss-reveal-delay", String(Math.min(index % 6, 5) * 65) + "ms");
+        observer?.observe(item);
+      });
+    };
+
+    if (!reduced.matches && "IntersectionObserver" in window) {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("ss-in-view");
+          observer?.unobserve(entry.target);
+        });
+      }, { threshold: 0.035, rootMargin: "0px 0px -3% 0px" });
+      attachReveal(document);
+    }
+
+    const onMutations = new MutationObserver((records) => {
+      records.forEach((record) => record.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) attachReveal(node);
+      }));
+    });
+    onMutations.observe(document.body, { childList: true, subtree: true });
+
+    let aura = document.querySelector<HTMLDivElement>(".ss-cursor-aura");
+    if (!aura) {
+      aura = document.createElement("div");
+      aura.className = "ss-cursor-aura";
+      aura.setAttribute("aria-hidden", "true");
+      document.body.appendChild(aura);
+    }
+
+    let activeTarget: HTMLElement | null = null;
+    const clearActive = () => {
+      if (!activeTarget) return;
+      activeTarget.classList.remove("ss-pointer-active", "ss-pointer-section", "ss-pointer-text", "ss-pointer-image", "ss-pointer-control", "ss-pointer-card");
+      activeTarget = null;
+    };
+
+    const onPointerOver = (event: PointerEvent) => {
+      if (!finePointer.matches || event.pointerType === "touch") return;
+      const source = event.target;
+      if (!(source instanceof Element)) return;
+      const next = source.closest<HTMLElement>(hoverSelector);
+      if (next === activeTarget) return;
+      clearActive();
+      if (!next) return;
+      activeTarget = next;
+      next.classList.add("ss-pointer-active", "ss-pointer-" + hoverType(next));
+      document.body.classList.add("ss-pointer-live");
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!finePointer.matches || event.pointerType === "touch" || reduced.matches) return;
+      if (aura) {
+        aura.style.transform = "translate3d(" + event.clientX + "px," + event.clientY + "px,0)";
+      }
+      if (activeTarget) {
+        const rect = activeTarget.getBoundingClientRect();
+        const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 100));
+        const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100));
+        activeTarget.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
+        activeTarget.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
+      }
+    };
+
+    const onPointerOut = (event: PointerEvent) => {
+      if (!activeTarget) return;
+      const next = event.relatedTarget;
+      if (next instanceof Node && activeTarget.contains(next)) return;
+      const source = event.target;
+      if (source instanceof Node && activeTarget.contains(source)) {
+        clearActive();
+        document.body.classList.remove("ss-pointer-live");
+      }
+    };
+
+    document.addEventListener("pointerover", onPointerOver, { passive: true });
+    document.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.addEventListener("pointerout", onPointerOut, { passive: true });
+
+    const onPointerModeChange = () => {
+      if (!finePointer.matches) {
+        clearActive();
+        document.body.classList.remove("ss-pointer-live");
+      }
+    };
+    finePointer.addEventListener?.("change", onPointerModeChange);
+
+    return () => {
+      onMutations.disconnect();
+      observer?.disconnect();
+      document.removeEventListener("pointerover", onPointerOver);
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerout", onPointerOut);
+      finePointer.removeEventListener?.("change", onPointerModeChange);
+      reduced.removeEventListener?.("change", reduceChange);
+      clearActive();
+      document.body.classList.remove("ss-pointer-live");
+    };
+  }, [pathname]);
+
+  return null;
+}
+`);
+let pointerProvider = readFileSync("src/components/providers.tsx", "utf8");
+if (!pointerProvider.includes('import { ScrollMotion } from "@/components/scroll-motion";')) {
+  pointerProvider = pointerProvider.replace('import { ScrollRestoration } from "@/components/scroll-restoration";', 'import { ScrollRestoration } from "@/components/scroll-restoration";\nimport { ScrollMotion } from "@/components/scroll-motion";');
+}
+if (!pointerProvider.includes("<ScrollMotion/>")) {
+  pointerProvider = pointerProvider.replace("<><ScrollRestoration/>", "<><ScrollRestoration/><ScrollMotion/>");
+}
+if (!pointerProvider.includes("<ScrollMotion/>")) throw new Error("Could not mount full-site pointer motion component.");
+writeFileSync("src/components/providers.tsx", pointerProvider);
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* Full-site cursor interaction: the pointer should visibly affect every major surface. */
+body { isolation: isolate; }
+body > div, body > main, .site-header, body main, .site-footer { position: relative; z-index: 1; }
+.site-header { z-index: 80; }
+.ss-cursor-aura {
+  position: fixed; top: 0; left: 0; z-index: 0; width: 340px; height: 340px;
+  margin: -170px 0 0 -170px; border-radius: 50%; pointer-events: none;
+  opacity: 0; background: radial-gradient(circle, rgba(224,100,76,.16) 0%, rgba(228,170,139,.10) 34%, rgba(137,166,145,.075) 54%, transparent 72%);
+  filter: blur(5px); mix-blend-mode: multiply;
+  transition: opacity .28s ease;
+  will-change: transform;
+}
+body.ss-pointer-live .ss-cursor-aura { opacity: 1; }
+.dark .ss-cursor-aura {
+  background: radial-gradient(circle, rgba(235,115,91,.2) 0%, rgba(178,139,193,.12) 38%, rgba(116,166,132,.11) 58%, transparent 74%);
+  mix-blend-mode: screen;
+}
+.ss-pointer-active {
+  --ss-hover-x: 50%; --ss-hover-y: 50%;
+  transition:
+    translate .34s cubic-bezier(.2,.72,.2,1),
+    scale .34s cubic-bezier(.2,.72,.2,1),
+    color .28s ease,
+    filter .34s ease,
+    box-shadow .34s ease,
+    border-color .34s ease,
+    text-shadow .34s ease;
+}
+.ss-pointer-section.ss-pointer-active {
+  translate: 0 -3px;
+  box-shadow: inset 0 0 0 1px rgba(220,99,75,.16), 0 15px 42px rgba(54,63,53,.055);
+}
+.ss-pointer-text.ss-pointer-active {
+  translate: 3px 0;
+  color: var(--ss-accent-dark);
+  text-shadow: 0 5px 22px rgba(220,99,75,.12);
+}
+.ss-pointer-control.ss-pointer-active {
+  translate: 0 -3px;
+  scale: 1.025;
+  filter: saturate(1.14);
+}
+.ss-pointer-card.ss-pointer-active {
+  translate: 0 -6px;
+  scale: 1.012;
+  box-shadow: 0 25px 58px rgba(38,49,39,.16), 0 0 0 1px rgba(223,90,67,.18);
+  border-color: rgba(223,90,67,.32) !important;
+}
+.ss-pointer-image { overflow: hidden; }
+.ss-pointer-image.ss-pointer-active img,
+.ss-pointer-image.ss-pointer-active > img {
+  transform: scale(1.055);
+  filter: saturate(1.15) contrast(1.035);
+}
+.ss-pointer-image.ss-pointer-active {
+  box-shadow: 0 0 0 2px rgba(223,90,67,.25), 0 18px 40px rgba(32,42,34,.14);
+}
+.ss-pointer-active::selection { background: var(--ss-accent); color: white; }
+.main-nav a.ss-pointer-active,
+.footer-grid a.ss-pointer-active {
+  color: var(--ss-accent-dark);
+  text-shadow: 0 4px 18px rgba(223,90,67,.16);
+}
+.ss-section-head.ss-pointer-active h2,
+.page-hero h1.ss-pointer-active,
+main section h2.ss-pointer-active,
+main section h3.ss-pointer-active {
+  background-image: linear-gradient(100deg, currentColor 0%, #df5a43 48%, #819c88 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ss-heading-glint 1.1s ease both;
+}
+@keyframes ss-heading-glint {
+  from { background-position: 100% center; }
+  to { background-position: 0% center; }
+}
+main section img.ss-pointer-active,
+main section .ss-pointer-image.ss-pointer-active img {
+  transition: transform .65s cubic-bezier(.2,.72,.2,1), filter .4s ease;
+}
+main section button.ss-pointer-active,
+main section a.ss-pointer-active,
+.site-header a.ss-pointer-active,
+.site-header button.ss-pointer-active {
+  box-shadow: 0 9px 24px rgba(43,52,43,.13);
+}
+.ss-pointer-active .studio-view-details,
+.ss-pointer-active .ss-category-arrow {
+  transform: translateX(4px);
+}
+@media (hover: hover) and (pointer: fine) {
+  main section, .site-header, .site-footer, .studio-card, .ss-category-card, .ss-step,
+  .about-value-card, .auth-v2-panel, .auth-v2-visual, .content-copy > * {
+    cursor: default;
+  }
+}
+@media (max-width: 720px) {
+  .ss-cursor-aura { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-cursor-aura { display: none !important; }
+  .ss-pointer-active { translate: none !important; scale: none !important; filter: none !important; transition: none !important; }
+  .ss-pointer-section.ss-pointer-active, .ss-pointer-card.ss-pointer-active { box-shadow: none !important; }
+  .ss-pointer-image.ss-pointer-active img { transform: none !important; }
+}
+`);
+console.log("StudioSpace full-site cursor spotlight, hover interactions and interactive element motion applied.");
+
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
