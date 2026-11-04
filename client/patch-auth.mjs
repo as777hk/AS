@@ -1057,4 +1057,64 @@ writeFileSync(
   "src/app/brand-refresh.css",
   readFileSync("src/app/brand-refresh.css", "utf8") + "\n" + "\n/* A more distinctive studio card: readable hierarchy, explicit CTA and refined motion. */\n.studio-grid { align-items: stretch; perspective: 1200px; }\n.studio-card {\n  position: relative; display: flex; min-width: 0; flex-direction: column; overflow: hidden;\n  border: 1px solid rgba(34,43,35,.1); border-radius: 20px; background: var(--ss-white);\n  box-shadow: 0 9px 28px rgba(28,31,27,.055); isolation: isolate; transform: translateZ(0);\n  transition: transform .42s cubic-bezier(.2,.72,.2,1), box-shadow .42s cubic-bezier(.2,.72,.2,1), border-color .32s ease;\n}\n.studio-card::after { position: absolute; z-index: 3; inset: 0; border: 1px solid transparent; border-radius: inherit; content: \"\"; pointer-events: none; transition: border-color .35s ease; }\n.studio-image-wrap { flex: 0 0 auto; aspect-ratio: 1.48; background: #ddd9cf; }\n.studio-image-wrap > a, .studio-image-wrap .studio-image-link { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }\n.studio-image-wrap > a::after { position: absolute; inset: 48% 0 0; background: linear-gradient(180deg,transparent,rgba(18,23,19,.24)); content: \"\"; pointer-events: none; }\n.studio-image-wrap img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .75s cubic-bezier(.2,.72,.2,1),filter .45s ease; }\n.studio-card-body { display: flex; min-height: 222px; flex: 1 1 auto; flex-direction: column; padding: 19px 19px 18px; }\n.studio-card-topline { display: flex; min-height: 22px; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }\n.studio-card-category { color: var(--ss-accent-dark); font-size: .67rem; font-weight: 850; letter-spacing: .1em; line-height: 1.3; text-transform: uppercase; }\n.studio-card-rating { display: inline-flex; align-items: center; gap: 4px; color: #a66c2f; font-size: .76rem; font-weight: 800; white-space: nowrap; }\n.studio-card-title { display: block; width: fit-content; max-width: 100%; color: var(--ss-ink); text-decoration: none; }\n.studio-card-title h3 { margin: 0; color: inherit; font-size: clamp(1.02rem,1.2vw,1.22rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.28; transition: color .25s ease; }\n.studio-card-location { display: flex; align-items: flex-start; gap: 7px; margin: 9px 0 17px; color: var(--ss-muted); font-size: .78rem; line-height: 1.5; }\n.studio-card-location svg { flex: 0 0 15px; margin-top: 2px; color: var(--ss-accent); }\n.studio-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--ss-line); }\n.studio-card-price { display: inline-flex; align-items: baseline; gap: 5px; color: var(--ss-muted); font-size: .72rem; white-space: nowrap; }\n.studio-card-price strong { color: var(--ss-ink); font-family: \"Manrope\",sans-serif; font-size: 1.28rem; font-weight: 850; letter-spacing: -.055em; }\n.studio-view-details {\n  position: relative; display: inline-flex; min-height: 43px; flex: 0 0 auto; align-items: center; justify-content: center; gap: 10px;\n  overflow: hidden; padding: 0 14px; border: 1px solid #d85f49; border-radius: 11px;\n  background: linear-gradient(110deg,#df684c 0%,#d65358 100%); color: #fff !important;\n  box-shadow: 0 5px 15px rgba(202,83,66,.2); font-size: .76rem; font-weight: 850; letter-spacing: .01em; text-decoration: none;\n  transition: transform .28s cubic-bezier(.2,.72,.2,1),box-shadow .28s ease,filter .28s ease;\n}\n.studio-view-details::before { position: absolute; top: -20%; bottom: -20%; left: -65%; width: 42%; background: linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent); content: \"\"; transform: skewX(-22deg); }\n.studio-view-details span, .studio-view-details svg { position: relative; z-index: 1; }\n.studio-view-details svg { transition: transform .28s cubic-bezier(.2,.72,.2,1); }\n.studio-view-details:hover { transform: translateY(-2px); filter: saturate(1.08); box-shadow: 0 9px 22px rgba(202,83,66,.3); }\n.studio-view-details:hover::before { animation: ss-cta-shine .75s ease both; }\n.studio-view-details:hover svg { transform: translate3d(3px,-2px,0); }\n@keyframes ss-cta-shine { to { left: 135%; } }\n@media (hover:hover) and (pointer:fine) {\n  .studio-card:hover { z-index: 2; transform: perspective(1200px) translate3d(0,-8px,0) rotateX(.45deg); border-color: rgba(223,90,67,.38); box-shadow: 0 22px 48px rgba(35,39,33,.14),0 5px 18px rgba(223,90,67,.08); }\n  .studio-card:hover::after { border-color: rgba(223,90,67,.25); }\n  .studio-card:hover .studio-image-wrap img { transform: scale(1.075); filter: saturate(1.06); }\n  .studio-card:hover .studio-card-title h3 { color: var(--ss-accent-dark); }\n}\n.studio-card:focus-within { border-color: rgba(223,90,67,.55); box-shadow: 0 0 0 3px rgba(223,90,67,.1),0 14px 34px rgba(28,31,27,.1); }\n.save-button { z-index: 4; width: 42px; height: 42px; box-shadow: 0 5px 16px rgba(18,23,19,.16); transition: transform .25s ease,background .25s ease,color .25s ease; }\n.save-button:hover { transform: scale(1.08); background: #fff; }\n.save-button.saved { background: #fff1ec; color: #d65345; }\n.dark .studio-card { border-color: #3b4a40; background: #202a24; box-shadow: 0 10px 30px rgba(0,0,0,.2); }\n.dark .studio-card:hover { border-color: rgba(240,148,125,.58); box-shadow: 0 22px 48px rgba(0,0,0,.36),0 5px 18px rgba(240,148,125,.08); }\n.dark .studio-card-title, .dark .studio-card-title h3, .dark .studio-card-price strong { color: #f4f1e9; }\n.dark .studio-card-location { color: #b7c1b8; }\n.dark .studio-card-footer { border-top-color: #3e4b42; }\n.dark .studio-view-details { border-color: #e77a67; background: linear-gradient(110deg,#db7059 0%,#c95861 100%); color: #fff !important; }\n.ss-category-card { overflow: hidden; border-radius: 17px; box-shadow: 0 5px 16px rgba(28,31,27,.025); }\n.ss-category-icon { transition: transform .38s cubic-bezier(.2,.72,.2,1),background .3s ease,color .3s ease; }\n.ss-category-card:hover .ss-category-icon { transform: translate3d(0,-3px,0) rotate(-5deg); background: var(--ss-accent); color: #fff; }\n.ss-step { border-radius: 14px; }\n.ss-step:hover { border-color: rgba(240,148,125,.5); }\n.page-hero::before {\n  position: absolute; top: -38%; right: -9%; width: clamp(260px,42vw,560px); aspect-ratio: 1;\n  border: 1px solid rgba(223,90,67,.12); border-radius: 50%;\n  background: repeating-radial-gradient(circle,transparent 0 26px,rgba(223,90,67,.055) 27px 28px,transparent 29px 54px);\n  content: \"\"; pointer-events: none; animation: ss-page-orbit 30s ease-in-out infinite alternate;\n}\n@keyframes ss-page-orbit { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(-24px,18px,0) rotate(8deg); } }\n.ss-about-visual img { animation: ss-about-drift 22s ease-in-out infinite alternate; }\n@keyframes ss-about-drift { from { transform: scale(1.015) translate3d(-.3%,0,0); } to { transform: scale(1.065) translate3d(.3%,-.4%,0); } }\n.btn:active, .studio-view-details:active { transform: translateY(0) scale(.98); }\n@media (max-width:720px) {\n  .studio-card-body { min-height: 210px; padding: 14px; }\n  .studio-card-footer { align-items: stretch; flex-direction: column; gap: 10px; }\n  .studio-view-details { width: 100%; min-height: 42px; }\n  .studio-card:hover { transform: none; }\n  .studio-image-wrap { aspect-ratio: 1.35; }\n  .ss-category-card { min-height: 154px; }\n  .page-hero::before { right: -28%; opacity: .65; }\n  .ss-about-visual img { animation-duration: 28s; }\n}\n@media (max-width:420px) {\n  .studio-card-body { min-height: 0; padding: 13px; }\n  .studio-card-footer { gap: 9px; }\n  .studio-card-price strong { font-size: 1.2rem; }\n  .studio-card-location { min-height: 34px; }\n}\n@media (prefers-reduced-motion:reduce) {\n  .studio-card,.studio-card::after,.studio-image-wrap img,.studio-view-details,.studio-view-details::before,\n  .studio-view-details svg,.save-button,.ss-category-card,.ss-category-icon,.ss-step,.ss-about-visual img,.page-hero::before,.btn {\n    animation: none !important; transition: none !important;\n  }\n  .studio-card:hover,.studio-view-details:hover { transform: none !important; }\n}\n"
 );
+
+replaceOnce(
+  "src/components/navbar.tsx",
+  '<Link className={active("/") } href="/" onClick={closeMenus}>Home</Link>'.replace('active("/") ', 'active("/")'),
+  '<Link className={active("/")} href="/" onClick={(event) => { closeMenus(); if (pathname === "/") { event.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); } }}>Home</Link>',
+  "Apply Home action after final navbar generation"
+);
+writeFileSync(
+  "src/app/brand-refresh.css",
+  readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* Animated linear-gradient atmosphere across every route, without blocking controls. */
+body { position: relative; isolation: isolate; }
+body::before, body::after {
+  position: fixed; inset: 0; z-index: -1; display: block; content: "";
+  pointer-events: none;
+}
+body::before {
+  background:
+    linear-gradient(118deg, rgba(219,103,79,.075) 0%, transparent 34%, rgba(117,145,125,.075) 68%, transparent 100%),
+    linear-gradient(28deg, transparent 12%, rgba(228,177,132,.07) 48%, transparent 82%),
+    repeating-linear-gradient(135deg, transparent 0 72px, rgba(83,105,88,.025) 73px 74px, transparent 75px 146px);
+  background-size: 180% 180%, 160% 160%, 220px 220px;
+  animation: ss-linear-atmosphere 34s ease-in-out infinite alternate;
+}
+body::after {
+  inset: -18%; opacity: .48;
+  background:
+    radial-gradient(ellipse at 18% 24%, rgba(223,105,79,.12), transparent 32%),
+    radial-gradient(ellipse at 82% 68%, rgba(127,157,137,.13), transparent 34%),
+    radial-gradient(ellipse at 56% 4%, rgba(229,190,151,.10), transparent 28%);
+  filter: blur(28px);
+  animation: ss-ambient-drift 26s ease-in-out infinite alternate;
+}
+@keyframes ss-linear-atmosphere {
+  0% { background-position: 0% 20%, 100% 0%, 0 0; }
+  50% { background-position: 70% 80%, 20% 100%, 70px 40px; }
+  100% { background-position: 100% 30%, 0% 20%, 140px 80px; }
+}
+@keyframes ss-ambient-drift {
+  0% { transform: translate3d(-1.5%, -1%, 0) rotate(-2deg) scale(1); }
+  50% { transform: translate3d(1%, 1.5%, 0) rotate(1deg) scale(1.035); }
+  100% { transform: translate3d(2%, -1%, 0) rotate(2deg) scale(1.06); }
+}
+.dark body::before {
+  background:
+    linear-gradient(118deg, rgba(219,103,79,.095) 0%, transparent 34%, rgba(117,145,125,.10) 68%, transparent 100%),
+    linear-gradient(28deg, transparent 12%, rgba(228,177,132,.045) 48%, transparent 82%),
+    repeating-linear-gradient(135deg, transparent 0 72px, rgba(190,210,192,.025) 73px 74px, transparent 75px 146px);
+}
+.dark body::after { opacity: .34; }
+@media (max-width: 720px) {
+  body::before { background-size: 220% 220%, 200% 200%, 180px 180px; animation-duration: 46s; }
+  body::after { inset: -8%; filter: blur(34px); animation-duration: 38s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none !important; }
+}
+`
+);
+
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
