@@ -271,3 +271,332 @@ for (const titlePath of ["src/components/studio-card.tsx", "src/app/studios/[id]
 }
 
 console.log("StudioSpace custom login and registration screens with email OTP support applied.");
+
+
+
+// StudioSpace phone OTP extension and final copy cleanup.
+function patchGeneratedFile(filePath, replacements, label) {
+  if (!existsSync(filePath)) {
+    console.warn("Skipped " + label + ": " + filePath + " was not generated.");
+    return;
+  }
+  let value = readFileSync(filePath, "utf8");
+  for (const [before, after] of replacements) {
+    if (value.includes(after)) continue;
+    if (!value.includes(before)) {
+      console.warn("Skipped " + label + ": expected source was not found in " + filePath);
+      return;
+    }
+    value = value.replace(before, after);
+  }
+  writeFileSync(filePath, value);
+}
+
+patchGeneratedFile("src/lib/auth.ts", [
+  [
+    'import { emailOTP, jwt } from "better-auth/plugins";',
+    'import { emailOTP, phoneNumber, jwt } from "better-auth/plugins";'
+  ],
+  [
+    'export const auth = betterAuth({',
+    [
+      'async function studioSpaceTwilioRequest(action: "Verifications" | "VerificationCheck", fields: Record<string, string>) {',
+      '  const accountSid = process.env.TWILIO_ACCOUNT_SID;',
+      '  const authToken = process.env.TWILIO_AUTH_TOKEN;',
+      '  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;',
+      '  if (!accountSid || !authToken || !serviceSid) {',
+      '    throw new Error("Phone verification is not configured. Add the Twilio Verify environment variables in Vercel.");',
+      '  }',
+      '  const authorization = Buffer.from(accountSid + ":" + authToken).toString("base64");',
+      '  const response = await fetch("https://verify.twilio.com/v2/Services/" + serviceSid + "/" + action, {',
+      '    method: "POST",',
+      '    headers: { Authorization: "Basic " + authorization, "Content-Type": "application/x-www-form-urlencoded" },',
+      '    body: new URLSearchParams(fields),',
+      '    cache: "no-store"',
+      '  });',
+      '  if (!response.ok) {',
+      '    console.error("StudioSpace SMS provider request failed with status", response.status);',
+      '    throw new Error("SMS verification could not be completed. Please check the phone number and try again.");',
+      '  }',
+      '  return response.json() as Promise<{ status?: string }>; ',
+      '}',
+      '',
+      'export const auth = betterAuth({'
+    ].join("\n")
+  ],
+  [
+    '    jwt({',
+    [
+      '    phoneNumber({',
+      '      otpLength: 6,',
+      '      expiresIn: 300,',
+      '      allowedAttempts: 5,',
+      '      requireVerification: true,',
+      '      phoneNumberValidator: (value) => /^\\+[1-9]\\d{7,14}$/.test(value),',
+      '      async sendOTP({ phoneNumber: destination }) {',
+      '        await studioSpaceTwilioRequest("Verifications", { To: destination, Channel: "sms" });',
+      '      },',
+      '      async verifyOTP({ phoneNumber: destination, code }) {',
+      '        const result = await studioSpaceTwilioRequest("VerificationCheck", { To: destination, Code: code });',
+      '        return result.status === "approved";',
+      '      }',
+      '    }),',
+      '    jwt({'
+    ].join("\n")
+  ]
+], "Twilio phone verification");
+
+patchGeneratedFile("src/lib/auth-client.ts", [
+  [
+    'import { emailOTPClient, jwtClient } from "better-auth/client/plugins";',
+    'import { emailOTPClient, phoneNumberClient, jwtClient } from "better-auth/client/plugins";'
+  ],
+  [
+    'plugins: [jwtClient(), emailOTPClient()]',
+    'plugins: [jwtClient(), emailOTPClient(), phoneNumberClient()]'
+  ]
+], "phone verification client plugin");
+
+patchGeneratedFile("src/app/login/login-client.tsx", [
+  [
+    'import { ArrowLeft, ArrowRight, KeyRound, LockKeyhole, Mail, ShieldCheck } from "lucide-react";',
+    'import { ArrowLeft, ArrowRight, KeyRound, LockKeyhole, Mail, Phone, ShieldCheck } from "lucide-react";'
+  ],
+  [
+    '  const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";',
+    '  const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";\n  const phoneOtpEnabled = process.env.NEXT_PUBLIC_PHONE_OTP_ENABLED === "true";'
+  ],
+  [
+    '  const [mode, setMode] = useState<"password" | "code">("password");\n  const [codeSent, setCodeSent] = useState(false);',
+    '  const [mode, setMode] = useState<"password" | "code" | "phone">("password");\n  const [codeSent, setCodeSent] = useState(false);\n  const [phoneNumber, setPhoneNumber] = useState("");\n  const [phoneCode, setPhoneCode] = useState("");\n  const [phoneCodeSent, setPhoneCodeSent] = useState(false);'
+  ],
+  [
+    '  return (\n    <SiteShell>',
+    [
+      '  async function sendPhoneCode() {',
+      '    const destination = phoneNumber.trim();',
+      '    if (!/^\\+[1-9]\\d{7,14}$/.test(destination)) {',
+      '      toast.error("Use an international phone number, including the country code.");',
+      '      return;',
+      '    }',
+      '    setBusy(true);',
+      '    try {',
+      '      const result = await authClient.phoneNumber.sendOtp({ phoneNumber: destination });',
+      '      if (result.error) throw new Error(result.error.message || "Could not send a text message.");',
+      '      setPhoneCodeSent(true);',
+      '      toast.success("Your verification code has been sent.");',
+      '    } catch (error) {',
+      '      toast.error(error instanceof Error ? error.message : "Could not send a text message.");',
+      '    } finally {',
+      '      setBusy(false);',
+      '    }',
+      '  }',
+      '',
+      '  async function verifyPhoneCode(event: React.FormEvent) {',
+      '    event.preventDefault();',
+      '    if (!/^\\d{6}$/.test(phoneCode)) { toast.error("Enter the six digit code."); return; }',
+      '    setBusy(true);',
+      '    try {',
+      '      const result = await authClient.phoneNumber.verify({ phoneNumber: phoneNumber.trim(), code: phoneCode.trim() });',
+      '      if (result.error) throw new Error(result.error.message || "That code could not be verified.");',
+      '      await finishLogin();',
+      '    } catch (error) {',
+      '      toast.error(error instanceof Error ? error.message : "That code could not be verified.");',
+      '    } finally {',
+      '      setBusy(false);',
+      '    }',
+      '  }',
+      '',
+      '  return (',
+      '    <SiteShell>'
+    ].join("\n")
+  ],
+  [
+    '{otpEnabled && (\n              <div className="auth-v2-switch" aria-label="Choose sign in method">\n                <button type="button" aria-pressed={mode === "password"} onClick={() => { setMode("password"); setCodeSent(false); }}>Password</button>\n                <button type="button" aria-pressed={mode === "code"} onClick={() => { setMode("code"); setCodeSent(false); }}>Email code</button>\n              </div>\n            )}',
+    '{(otpEnabled || phoneOtpEnabled) && (\n              <div className="auth-v2-switch" aria-label="Choose sign in method">\n                <button type="button" aria-pressed={mode === "password"} onClick={() => { setMode("password"); setCodeSent(false); setPhoneCodeSent(false); }}>Password</button>\n                {otpEnabled && <button type="button" aria-pressed={mode === "code"} onClick={() => { setMode("code"); setCodeSent(false); }}>Email code</button>}\n                {phoneOtpEnabled && <button type="button" aria-pressed={mode === "phone"} onClick={() => { setMode("phone"); setPhoneCodeSent(false); }}>Phone code</button>}\n              </div>\n            )}'
+  ],
+  [
+    '            ) : !codeSent ? (',
+    [
+      '            ) : mode === "phone" ? (',
+      '              !phoneCodeSent ? (',
+      '                <form className="auth-v2-form" onSubmit={event => { event.preventDefault(); void sendPhoneCode(); }}>',
+      '                  <div className="auth-v2-field">',
+      '                    <label htmlFor="login-phone">Phone number</label>',
+      '                    <input className="auth-v2-input" id="login-phone" type="tel" inputMode="tel" autoComplete="tel" pattern="\\\\+[1-9][0-9]{7,14}" required value={phoneNumber} onChange={event => setPhoneNumber(event.target.value)} placeholder="+8801XXXXXXXXX" />',
+      '                    <small className="muted">Include your country code, for example +880.</small>',
+      '                  </div>',
+      '                  <button className="auth-v2-primary" type="submit" disabled={busy}>',
+      '                    {busy ? "Sending code..." : "Send text code"} <Phone size={17} />',
+      '                  </button>',
+      '                </form>',
+      '              ) : (',
+      '                <form className="auth-v2-form" onSubmit={verifyPhoneCode}>',
+      '                  <div className="auth-v2-field">',
+      '                    <label htmlFor="login-phone-code">Six digit code</label>',
+      '                    <input className="auth-v2-input otp" id="login-phone-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={phoneCode} onChange={event => setPhoneCode(event.target.value.replace(/\\\\D/g, "").slice(0, 6))} placeholder="000000" />',
+      '                  </div>',
+      '                  <button className="auth-v2-primary" type="submit" disabled={busy || phoneCode.length !== 6}>',
+      '                    {busy ? "Checking code..." : "Verify and sign in"} <ShieldCheck size={17} />',
+      '                  </button>',
+      '                  <button className="auth-v2-resend" type="button" disabled={busy} onClick={() => { setPhoneCodeSent(false); setPhoneCode(""); void sendPhoneCode(); }}>Send a new code</button>',
+      '                </form>',
+      '              )',
+      '            ) : !codeSent ? ('
+    ].join("\n")
+  ],
+  [
+    '{!otpEnabled && (',
+    '{!otpEnabled && !phoneOtpEnabled && ('
+  ]
+], "phone code login interface");
+
+patchGeneratedFile("src/app/register/page.tsx", [
+  [
+    '  const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";',
+    '  const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";\n  const phoneOtpEnabled = process.env.NEXT_PUBLIC_PHONE_OTP_ENABLED === "true";'
+  ],
+  [
+    '        router.push("/login");',
+    '        router.push(phoneOtpEnabled ? "/phone-verify" : "/login");'
+  ],
+  [
+    '      router.push("/");\n      router.refresh();',
+    '      router.push(phoneOtpEnabled ? "/phone-verify" : "/");\n      router.refresh();'
+  ]
+], "registration phone verification handoff");
+
+const phoneVerifyPage = [
+'"use client";',
+'import { useEffect, useState } from "react";',
+'import { useRouter } from "next/navigation";',
+'import { ArrowLeft, ArrowRight, Phone, ShieldCheck } from "lucide-react";',
+'import { toast } from "sonner";',
+'import Link from "next/link";',
+'import { SiteShell } from "@/components/site-shell";',
+'import { authClient, syncAuthCookie } from "@/lib/auth-client";',
+'',
+'export default function PhoneVerifyPage() {',
+'  const router = useRouter();',
+'  const { data: session, isPending } = authClient.useSession();',
+'  const [phoneNumber, setPhoneNumber] = useState("");',
+'  const [code, setCode] = useState("");',
+'  const [sent, setSent] = useState(false);',
+'  const [busy, setBusy] = useState(false);',
+'',
+'  useEffect(() => {',
+'    if (!isPending && !session) router.replace("/login?callbackUrl=%2Fphone-verify");',
+'  }, [isPending, session, router]);',
+'',
+'  async function sendCode(event: React.FormEvent) {',
+'    event.preventDefault();',
+'    const destination = phoneNumber.trim();',
+'    if (!/^\\+[1-9]\\d{7,14}$/.test(destination)) {',
+'      toast.error("Use an international phone number, including the country code.");',
+'      return;',
+'    }',
+'    setBusy(true);',
+'    try {',
+'      const result = await authClient.phoneNumber.sendOtp({ phoneNumber: destination });',
+'      if (result.error) throw new Error(result.error.message || "Could not send a text message.");',
+'      setSent(true);',
+'      toast.success("Your verification code has been sent.");',
+'    } catch (error) {',
+'      toast.error(error instanceof Error ? error.message : "Could not send a text message.");',
+'    } finally { setBusy(false); }',
+'  }',
+'',
+'  async function verifyCode(event: React.FormEvent) {',
+'    event.preventDefault();',
+'    if (!/^\\d{6}$/.test(code)) { toast.error("Enter the six digit code."); return; }',
+'    setBusy(true);',
+'    try {',
+'      const result = await authClient.phoneNumber.verify({',
+'        phoneNumber: phoneNumber.trim(),',
+'        code: code.trim(),',
+'        updatePhoneNumber: true,',
+'        disableSession: true',
+'      });',
+'      if (result.error) throw new Error(result.error.message || "That code could not be verified.");',
+'      await syncAuthCookie();',
+'      toast.success("Your phone number is verified.");',
+'      router.push("/");',
+'      router.refresh();',
+'    } catch (error) {',
+'      toast.error(error instanceof Error ? error.message : "Phone verification could not be completed.");',
+'    } finally { setBusy(false); }',
+'  }',
+'',
+'  if (isPending || !session) return <SiteShell><main className="auth-page auth-v2"><div className="auth-v2-shell"><div className="auth-v2-panel">Checking your account…</div></div></main></SiteShell>;',
+'',
+'  return (',
+'    <SiteShell>',
+'      <section className="auth-page auth-v2">',
+'        <div className="auth-v2-shell">',
+'          <aside className="auth-v2-visual">',
+'            <Link href="/" className="auth-v2-brand">',
+'              <img src="/studiospace-mark.svg" alt="" />',
+'              <span>studio<strong>space</strong><small>CREATIVE SPACES, SHARED</small></span>',
+'            </Link>',
+'            <div className="auth-v2-story">',
+'              <span className="eyebrow">A MORE SECURE MEMBER PROFILE</span>',
+'              <h2>Keep your number close to your <em>creative account.</em></h2>',
+'              <p>Verify a mobile number to make phone code sign in available on your next visit.</p>',
+'            </div>',
+'            <div className="auth-v2-proof"><span>Private account access</span><span>Six digit SMS codes</span></div>',
+'          </aside>',
+'          <div className="auth-v2-panel">',
+'            <Link href="/" className="back-link"><ArrowLeft size={16} /> Back to StudioSpace</Link>',
+'            <span className="eyebrow">PHONE VERIFICATION</span>',
+'            <h1>Verify your number.</h1>',
+'            <p className="auth-v2-intro">Enter your number with its country code. We will send a short lived code by text message.</p>',
+'            {!sent ? (',
+'              <form className="auth-v2-form" onSubmit={sendCode}>',
+'                <div className="auth-v2-field">',
+'                  <label htmlFor="verify-phone">Mobile number</label>',
+'                  <input className="auth-v2-input" id="verify-phone" type="tel" inputMode="tel" autoComplete="tel" pattern="\\\\+[1-9][0-9]{7,14}" required value={phoneNumber} onChange={event => setPhoneNumber(event.target.value)} placeholder="+8801XXXXXXXXX" />',
+'                  <small className="muted">Use international format, for example +880.</small>',
+'                </div>',
+'                <button className="auth-v2-primary" type="submit" disabled={busy}>{busy ? "Sending code..." : "Send verification code"} <Phone size={17} /></button>',
+'              </form>',
+'            ) : (',
+'              <form className="auth-v2-form" onSubmit={verifyCode}>',
+'                <div className="auth-v2-field">',
+'                  <label htmlFor="verify-phone-code">Six digit code</label>',
+'                  <input className="auth-v2-input otp" id="verify-phone-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={event => setCode(event.target.value.replace(/\\\\D/g, "").slice(0, 6))} placeholder="000000" />',
+'                </div>',
+'                <button className="auth-v2-primary" type="submit" disabled={busy || code.length !== 6}>{busy ? "Verifying..." : "Verify phone number"} <ShieldCheck size={17} /></button>',
+'                <button className="auth-v2-resend" type="button" disabled={busy} onClick={() => { setSent(false); setCode(""); }}>Use a different number</button>',
+'              </form>',
+'            )}',
+'            <button className="auth-v2-secondary" type="button" onClick={() => router.push("/")}>Skip for now <ArrowRight size={16} /></button>',
+'          </div>',
+'        </div>',
+'      </section>',
+'    </SiteShell>',
+'  );',
+'}'
+].join("\n");
+
+if (!existsSync("src/app/phone-verify")) mkdirSync("src/app/phone-verify", { recursive: true });
+writeFileSync("src/app/phone-verify/page.tsx", phoneVerifyPage);
+
+const copyFiles = [
+  "src/app/page.tsx",
+  "src/app/login/login-client.tsx",
+  "src/app/register/page.tsx",
+  "src/app/phone-verify/page.tsx",
+  "src/components/footer.tsx",
+  "src/components/navbar.tsx"
+];
+for (const filePath of copyFiles) {
+  if (!existsSync(filePath)) continue;
+  const source = readFileSync(filePath, "utf8");
+  const cleaned = source
+    .replace(/—/g, ",")
+    .replace(/–/g, " to ")
+    .replace(/>([^<>]*?)</g, (whole, text) => ">" + text.replace(/\s-\s/g, ", ") + "<");
+  if (cleaned !== source) writeFileSync(filePath, cleaned);
+}
+
+console.log("StudioSpace phone OTP integration and member copy cleanup applied.");
