@@ -1139,14 +1139,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 const hoverSelector = [
-  ".site-header", ".site-header .brand", ".main-nav a:not([href='/'])", ".nav-actions a", ".nav-actions button",
-  "main section", "main section h1", "main section h2", "main section h3", "main section p",
-  "main section a", "main section button", "main section img", "main section article",
-  ".ss-hero-panel", ".ss-hero-copy", ".ss-hero-topline", ".ss-hero-foot",
-  ".ss-section-head", ".ss-category-card", ".ss-step", ".studio-card",
-  ".filter-bar", ".auth-v2-panel", ".auth-v2-visual", ".detail-gallery > *",
-  ".content-copy > *", ".footer-grid > *", ".footer-grid a", ".footer-grid button",
-  ".about-value-card", ".how-page-note-inner", ".about-page-cta-inner"
+  ".studio-card", ".ss-category-card", ".ss-step", ".about-value-card"
 ].join(",");
 
 function hoverType(element: HTMLElement): "section" | "text" | "image" | "control" | "card" {
@@ -1239,20 +1232,16 @@ export function ScrollMotion() {
     });
     onMutations.observe(document.body, { childList: true, subtree: true });
 
-    let aura = document.querySelector<HTMLDivElement>(".ss-cursor-aura");
-    if (!aura) {
-      aura = document.createElement("div");
-      aura.className = "ss-cursor-aura";
-      aura.setAttribute("aria-hidden", "true");
-      document.body.appendChild(aura);
-    }
-
+    // No full-screen cursor-following glow: it caused expensive compositing
+    // across the entire page on every pointer movement.
     let activeTarget: HTMLElement | null = null;
     const clearActive = () => {
       if (!activeTarget) return;
       activeTarget.classList.remove("ss-pointer-active", "ss-pointer-section", "ss-pointer-text", "ss-pointer-image", "ss-pointer-control", "ss-pointer-card");
       activeTarget.style.removeProperty("--ss-tilt-x");
       activeTarget.style.removeProperty("--ss-tilt-y");
+      activeTarget.style.removeProperty("--ss-hover-x");
+      activeTarget.style.removeProperty("--ss-hover-y");
       activeTarget = null;
     };
 
@@ -1267,28 +1256,33 @@ export function ScrollMotion() {
       if (!next) return;
       activeTarget = next;
       next.classList.add("ss-pointer-active", "ss-pointer-" + hoverType(next));
-      document.body.classList.add("ss-pointer-live");
     };
 
+    // Coalesce high-frequency pointer events to one visual update per frame.
+    // Only a card currently under the pointer is measured or transformed.
+    let pointerFrame = 0;
+    let latestPointerX = 0;
+    let latestPointerY = 0;
     const onPointerMove = (event: PointerEvent) => {
-      if (!finePointer.matches || event.pointerType === "touch" || reduced.matches) return;
-      if (aura) {
-        aura.style.transform = "translate3d(" + event.clientX + "px," + event.clientY + "px,0)";
-      }
-      if (activeTarget) {
-        const rect = activeTarget.getBoundingClientRect();
-        const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 100));
-        const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100));
-        activeTarget.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
-        activeTarget.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
-        if (activeTarget.matches(".studio-card, .ss-category-card, .ss-step, .about-value-card")) {
-          const isStudioCard = activeTarget.matches(".studio-card");
-          const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4);
-          const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5);
-          activeTarget.style.setProperty("--ss-tilt-x", tiltX.toFixed(2) + "deg");
-          activeTarget.style.setProperty("--ss-tilt-y", tiltY.toFixed(2) + "deg");
-        }
-      }
+      if (!finePointer.matches || event.pointerType === "touch" || reduced.matches || !activeTarget) return;
+      latestPointerX = event.clientX;
+      latestPointerY = event.clientY;
+      if (pointerFrame) return;
+      pointerFrame = window.requestAnimationFrame(() => {
+        pointerFrame = 0;
+        const target = activeTarget;
+        if (!target) return;
+        const rect = target.getBoundingClientRect();
+        const x = Math.max(0, Math.min(100, ((latestPointerX - rect.left) / Math.max(rect.width, 1)) * 100));
+        const y = Math.max(0, Math.min(100, ((latestPointerY - rect.top) / Math.max(rect.height, 1)) * 100));
+        const isStudioCard = target.matches(".studio-card");
+        const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4);
+        const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5);
+        target.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
+        target.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
+        target.style.setProperty("--ss-tilt-x", tiltX.toFixed(2) + "deg");
+        target.style.setProperty("--ss-tilt-y", tiltY.toFixed(2) + "deg");
+      });
     };
 
     const onPointerOut = (event: PointerEvent) => {
@@ -1298,7 +1292,6 @@ export function ScrollMotion() {
       const source = event.target;
       if (source instanceof Node && activeTarget.contains(source)) {
         clearActive();
-        document.body.classList.remove("ss-pointer-live");
       }
     };
 
@@ -1322,8 +1315,8 @@ export function ScrollMotion() {
       document.removeEventListener("pointerout", onPointerOut);
       finePointer.removeEventListener?.("change", onPointerModeChange);
       reduced.removeEventListener?.("change", reduceChange);
+      if (pointerFrame) window.cancelAnimationFrame(pointerFrame);
       clearActive();
-      document.body.classList.remove("ss-pointer-live");
     };
   }, [pathname]);
 
@@ -2498,3 +2491,13 @@ replaceOnce("src/app/as/page.tsx",
   'if(!v.ok){await loadCaptcha();throw new Error(p.message||"Complete the new CAPTCHA challenge.")}}\n  const result=await authClient.signIn.email',
   'if(!v.ok){await loadCaptcha();throw new Error(p.message||"Complete the new CAPTCHA challenge.")}setCaptchaId("");setCaptchaImage("");setCaptchaAnswer("");}\n  const result=await authClient.signIn.email',
   "clear each one-time admin login challenge after successful CAPTCHA verification");
+
+
+// Cursor performance hardening: no global glow or page-wide pointer transforms.
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+.ss-cursor-aura { display: none !important; }
+@media (hover: hover) and (pointer: fine) {
+  .ss-pointer-section, .ss-pointer-text, .ss-pointer-image, .ss-pointer-control { translate: none !important; scale: none !important; filter: none !important; box-shadow: none !important; text-shadow: none !important; }
+}
+`);
+console.log("Cursor effects limited to cards and frame-synced.");
