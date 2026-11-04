@@ -1135,7 +1135,7 @@ console.log("StudioSpace page separation, below-form Google sign-in, linear card
 
 writeFileSync("src/components/scroll-motion.tsx", String.raw`"use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 const hoverSelector = [
@@ -1159,8 +1159,11 @@ function hoverType(element: HTMLElement): "section" | "text" | "image" | "contro
 
 export function ScrollMotion() {
   const pathname = usePathname();
+  const previousPathRef = useRef(pathname);
+  const isClientNavigation = previousPathRef.current !== pathname;
 
   useEffect(() => {
+    previousPathRef.current = pathname;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const reduceChange = () => {
@@ -1181,7 +1184,22 @@ export function ScrollMotion() {
     ].join(",");
 
     let observer: IntersectionObserver | null = null;
+    const showWithoutReveal = (item: HTMLElement) => {
+      item.dataset.ssMotionReady = "true";
+      item.classList.remove("ss-reveal");
+      item.style.removeProperty("--ss-reveal-delay");
+    };
     const attachReveal = (scope: ParentNode) => {
+      // SPA route content must never start hidden behind an entrance observer.
+      // Reveal animations are reserved for a full page load; client transitions
+      // keep the newly mounted route immediately readable.
+      if (isClientNavigation) {
+        if (scope instanceof HTMLElement && (scope.matches(revealSelector) || scope.classList.contains("ss-reveal"))) {
+          showWithoutReveal(scope);
+        }
+        scope.querySelectorAll<HTMLElement>(revealSelector + ", .ss-reveal").forEach(showWithoutReveal);
+        return;
+      }
       if (reduced.matches || !("IntersectionObserver" in window) || !observer) return;
       if (scope instanceof HTMLElement && scope.matches(revealSelector)) {
         if (scope.dataset.ssMotionReady !== "true") {
@@ -1201,7 +1219,9 @@ export function ScrollMotion() {
       });
     };
 
-    if (!reduced.matches && "IntersectionObserver" in window) {
+    if (isClientNavigation) {
+      attachReveal(document);
+    } else if (!reduced.matches && "IntersectionObserver" in window) {
       observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
