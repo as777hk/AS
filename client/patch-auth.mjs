@@ -1713,6 +1713,39 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
 }
 `);
 
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* Reduced-motion users still get clear, non-moving hover/focus feedback. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce) {
+  .studio-card:hover.ss-pointer-active.ss-pointer-card,
+  .studio-card:focus-within {
+    transform: none !important;
+    border-color: rgba(223,90,67,.8) !important;
+    box-shadow: 0 0 0 2px rgba(223,90,67,.2), 0 14px 34px rgba(28,31,27,.16) !important;
+  }
+  .studio-card:hover .studio-card-title h3,
+  .studio-card:focus-within .studio-card-title h3 {
+    color: var(--ss-accent-dark) !important;
+  }
+  .ss-category-card:hover.ss-pointer-active.ss-pointer-card,
+  .ss-category-card:focus-visible,
+  .ss-step:hover.ss-pointer-active.ss-pointer-card,
+  .about-value-card:hover.ss-pointer-active.ss-pointer-card {
+    transform: none !important;
+    border-color: rgba(223,90,67,.72) !important;
+    box-shadow: 0 0 0 2px rgba(223,90,67,.18), 0 12px 28px rgba(31,42,33,.12) !important;
+  }
+  .dark .studio-card:hover.ss-pointer-active.ss-pointer-card,
+  .dark .studio-card:focus-within,
+  .dark .ss-category-card:hover.ss-pointer-active.ss-pointer-card,
+  .dark .ss-category-card:focus-visible,
+  .dark .ss-step:hover.ss-pointer-active.ss-pointer-card,
+  .dark .about-value-card:hover.ss-pointer-active.ss-pointer-card {
+    border-color: rgba(255,178,156,.88) !important;
+    box-shadow: 0 0 0 2px rgba(255,178,156,.22), 0 14px 32px rgba(0,0,0,.28) !important;
+  }
+}
+`);
+
 console.log("StudioSpace full-site cursor spotlight, hover interactions and interactive element motion applied.");
 
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
