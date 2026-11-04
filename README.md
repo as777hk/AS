@@ -103,3 +103,23 @@ To enable local uploads in production:
 3. Redeploy the frontend after saving the variable.
 
 Only image files are accepted, with a maximum upload size of 32,000,000 bytes. The supported file picker formats are JPEG, PNG and WebP. The API key must remain server-side; do not rename it to a `NEXT_PUBLIC_*` variable. Pasting an already-hosted image URL remains available when uploads are not configured.
+
+
+## Account security and email verification codes
+
+StudioSpace includes a custom member sign-in and registration experience. Password sign-in remains available. Email one-time codes can be enabled for new account verification and passwordless sign-in through Better Auth's Email OTP plugin.
+
+To activate email codes in Vercel:
+
+1. Create a Resend account and verify the sending domain you will use.
+2. In the **as-frontend** Vercel project, add `RESEND_API_KEY` as a Sensitive environment variable.
+3. Add `AUTH_FROM_EMAIL` as the verified sender, for example `StudioSpace <accounts@your-verified-domain.com>`.
+4. Add `NEXT_PUBLIC_EMAIL_OTP_ENABLED=true` as a Plain environment variable so the account screens expose the email code flow.
+5. Apply the variables to Production. Add them to Preview and Development if those environments should send real codes.
+6. Redeploy the frontend.
+
+When both server-side email variables are present, the server requires email verification before password sign-in. Verification codes contain six digits, expire after five minutes, allow five attempts and are stored in hashed form. The Resend API key is used only on the server and must never be exposed with a `NEXT_PUBLIC_` prefix.
+
+If these environment variables are not configured, the existing password account flow remains enabled and the code options stay unavailable. Do not enable only the public flag without configuring the server-side sender.
+
+Phone-number verification is not enabled. It requires an SMS provider such as Twilio Verify and its own server-side credentials, delivery setup and phone-number verification flow.
