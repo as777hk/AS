@@ -602,12 +602,12 @@ const copyFiles = [
 
 function cleanWebsiteCopy(value) {
   return value
-    .replace(/(\\d)\\s*[–—−-]\\s*(\\d)/g, "$1 to $2")
-    .replace(/\\s*[–—−]\\s*/g, ", ")
-    .replace(/\\s+-\\s+/g, ", ")
+    .replace(/(\d)\s*[–—−-]\s*(\d)/g, "$1 to $2")
+    .replace(/\s*[–—−]\s*/g, ", ")
+    .replace(/\s+-\s+/g, ", ")
     .replace(/([A-Za-z])-([A-Za-z])/g, "$1 $2")
-    .replace(/\\s{2,}/g, " ")
-    .replace(/\\s+([,.!?;:])/g, "$1");
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([,.!?;:])/g, "$1");
 }
 
 for (const filePath of copyFiles) {
@@ -628,11 +628,11 @@ const homepagePath = "src/app/page.tsx";
 if (existsSync(homepagePath)) {
   let homepage = readFileSync(homepagePath, "utf8");
   homepage = homepage
-    .replace(/(kicker|title|copy|imageAlt):\\s*"([^"]*)"/g, (_match, key, value) => key + ': "' + cleanWebsiteCopy(value) + '"')
-    .replace(/(THE CURRENT COLLECTION|START WITH YOUR MEDIUM|A CLEARER WAY TO BOOK|A MARKETPLACE FOR MAKERS)\\s*\\/\\s*0[1-4]\\b/g, "$1")
-    .replace(/Discover\\s*\\/\\s*Book\\s*\\/\\s*Make/g, "Discover, book and make")
-    .replace(/<div className="ss-hero-index">\\s*<strong>\\{slide\\.index\\}<\\/strong>\\s*<span>StudioSpace collection<\\/span>\\s*<\\/div>/g, "")
-    .replace(/<span className="ss-step-number">\\{step\\.number\\}<\\/span>/g, "");
+    .replace(/(kicker|title|copy|imageAlt):\s*"([^"]*)"/g, (_match, key, value) => key + ': "' + cleanWebsiteCopy(value) + '"')
+    .replace(/(THE CURRENT COLLECTION|START WITH YOUR MEDIUM|A CLEARER WAY TO BOOK|A MARKETPLACE FOR MAKERS)\s*\/\s*0[1-4]\b/g, "$1")
+    .replace(/Discover\s*\/\s*Book\s*\/\s*Make/g, "Discover, book and make")
+    .replace(/<div className="ss-hero-index">\s*<strong>\{slide\.index\}<\/strong>\s*<span>StudioSpace collection<\/span>\s*<\/div>/g, "")
+    .replace(/<span className="ss-step-number">\{step\.number\}<\/span>/g, "");
   writeFileSync(homepagePath, homepage);
 }
 
