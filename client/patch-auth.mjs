@@ -1152,8 +1152,8 @@ const hoverSelector = [
 function hoverType(element: HTMLElement): "section" | "text" | "image" | "control" | "card" {
   if (element.matches("main section, .page-hero, .ss-hero-panel, .auth-v2-panel, .auth-v2-visual, .how-page-note-inner, .about-page-cta-inner")) return "section";
   if (element.matches("img, .ss-about-visual, .detail-gallery > *")) return "image";
-  if (element.matches("a, button, input, select, textarea, .nav-actions > *")) return "control";
   if (element.matches("article, .studio-card, .ss-category-card, .ss-step, .about-value-card, .filter-bar")) return "card";
+  if (element.matches("a, button, input, select, textarea, .nav-actions > *")) return "control";
   return "text";
 }
 
@@ -1261,9 +1261,10 @@ export function ScrollMotion() {
         const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100));
         activeTarget.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
         activeTarget.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
-        if (activeTarget.matches(".studio-card")) {
-          const tiltX = ((x - 50) / 50) * 4.2;
-          const tiltY = ((50 - y) / 50) * 3.6;
+        if (activeTarget.matches(".studio-card, .ss-category-card, .ss-step, .about-value-card")) {
+          const isStudioCard = activeTarget.matches(".studio-card");
+          const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4);
+          const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5);
           activeTarget.style.setProperty("--ss-tilt-x", tiltX.toFixed(2) + "deg");
           activeTarget.style.setProperty("--ss-tilt-y", tiltY.toFixed(2) + "deg");
         }
@@ -1637,6 +1638,76 @@ html { scroll-padding-top: 92px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .studio-card.ss-pointer-card.ss-pointer-active {
+    transform: none !important;
+  }
+}
+`);
+
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* Final interaction pass: make card depth noticeable and preserve dark-mode control contrast. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .studio-card.ss-pointer-card.ss-pointer-active {
+    transform:
+      perspective(1080px)
+      rotateX(var(--ss-tilt-y, 0deg))
+      rotateY(var(--ss-tilt-x, 0deg))
+      translate3d(0, -12px, 0)
+      scale(1.024) !important;
+    box-shadow:
+      0 32px 68px rgba(24,31,25,.22),
+      0 10px 28px rgba(210,92,69,.15) !important;
+    border-color: rgba(231,112,88,.72) !important;
+  }
+  .studio-card.ss-pointer-card.ss-pointer-active .studio-image-wrap img {
+    transform: scale(1.095) !important;
+    filter: saturate(1.13) contrast(1.035);
+  }
+  .ss-category-card.ss-pointer-card.ss-pointer-active,
+  .ss-step.ss-pointer-card.ss-pointer-active,
+  .about-value-card.ss-pointer-card.ss-pointer-active {
+    transform:
+      perspective(980px)
+      rotateX(var(--ss-tilt-y, 0deg))
+      rotateY(var(--ss-tilt-x, 0deg))
+      translate3d(0,-8px,0)
+      scale(1.018) !important;
+    box-shadow: 0 24px 50px rgba(31,42,33,.17), 0 0 0 1px rgba(223,90,67,.2) !important;
+    border-color: rgba(223,90,67,.42) !important;
+  }
+}
+.dark .site-header .icon-button,
+.dark .site-header .icon-button:hover,
+.dark .site-header .icon-button:focus-visible,
+.dark .site-header .icon-button:active {
+  color: #fff !important;
+  border-color: #819487 !important;
+  background: #2d3b32 !important;
+  opacity: 1 !important;
+}
+.dark .site-header .icon-button:hover,
+.dark .site-header .icon-button:focus-visible {
+  color: #fff !important;
+  border-color: #ffb29c !important;
+  background: #405546 !important;
+  box-shadow: 0 0 0 3px rgba(240,152,127,.2), 0 8px 20px rgba(0,0,0,.2) !important;
+}
+.dark .site-header .icon-button svg {
+  color: #fff !important;
+  stroke: currentColor !important;
+}
+.dark .site-header .nav-actions .btn-ghost,
+.dark .site-header .nav-actions .btn-ghost:hover {
+  color: #f6f6ef !important;
+}
+.dark .site-header .nav-actions .btn-dark,
+.dark .site-header .nav-actions .btn-dark:hover {
+  color: #172019 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-card.ss-pointer-card.ss-pointer-active,
+  .ss-category-card.ss-pointer-card.ss-pointer-active,
+  .ss-step.ss-pointer-card.ss-pointer-active,
+  .about-value-card.ss-pointer-card.ss-pointer-active {
     transform: none !important;
   }
 }
