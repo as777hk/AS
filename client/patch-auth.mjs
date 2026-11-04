@@ -1931,3 +1931,80 @@ html.dark .btn-light:hover {
 `);
 
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
+
+// Apply a single semantic palette to both theme modes across all routes.
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* StudioSpace unified light/dark theme pass v2 */
+html:not(.dark) {
+  color-scheme: light; --ss-paper:#f4f1eb; --ss-paper-deep:#eae6dd; --ss-ink:#191d1a;
+  --ss-muted:#626a62; --ss-line:#dedbd2; --ss-accent:#df5a43; --ss-accent-dark:#a83f30;
+  --ss-sage:#dfe6dc; --ss-white:#fffefa; --ss-shadow:0 18px 50px rgba(28,31,27,.08);
+  --bg:var(--ss-paper); --surface:var(--ss-white); --text:var(--ss-ink); --muted:var(--ss-muted);
+  --line:var(--ss-line); --accent:var(--ss-accent-dark); --accent-soft:#f5e6dd;
+  --forest:#203c35; --foreground:var(--ss-ink); --card:var(--ss-white); --border:var(--ss-line);
+}
+html.dark {
+  color-scheme: dark; --ss-paper:#151a16; --ss-paper-deep:#1d251f; --ss-ink:#f3f1e9;
+  --ss-muted:#b7c1b7; --ss-line:#3a473e; --ss-accent:#f19a82; --ss-accent-dark:#ffad98;
+  --ss-sage:#34463a; --ss-white:#222b24; --ss-shadow:0 20px 52px rgba(0,0,0,.28);
+  --bg:var(--ss-paper); --surface:var(--ss-white); --text:var(--ss-ink); --muted:var(--ss-muted);
+  --line:var(--ss-line); --accent:var(--ss-accent); --accent-soft:#3b2d26;
+  --forest:#293a30; --foreground:var(--ss-ink); --card:var(--ss-white); --border:var(--ss-line);
+}
+html,body{background:var(--ss-paper);color:var(--ss-ink)}
+body{transition:background-color .22s ease,color .22s ease}
+h1,h2,h3,h4,h5,h6{color:var(--ss-ink)}
+.muted,.text-muted,.studio-meta,.studio-card .studio-meta{color:var(--ss-muted)}
+html.dark body{background:var(--ss-paper)!important;color:var(--ss-ink)!important}
+html.dark .site-header{background:rgba(21,26,22,.9)!important;border-bottom-color:rgba(235,241,232,.12)!important}
+html.dark .site-header .brand,html.dark .site-header .brand>span,html.dark .site-header .nav-link,html.dark .site-header .nav-actions .nav-link{color:#f3f1e9!important}
+html.dark .site-header .nav-link:hover,html.dark .site-header .nav-link.active{color:#ffad98!important}
+html.dark .page-hero,html.dark .ss-featured,html.dark .ss-about,html.dark .auth-page{background:var(--ss-paper)!important}
+html.dark .page-hero{border-bottom-color:var(--ss-line)!important}
+html.dark .page-hero h1,html.dark .page-hero h2,html.dark .ss-section-head h2,html.dark .ss-about-copy h2,html.dark .ss-section-head h3{color:var(--ss-ink)!important}
+html.dark .page-hero p,html.dark .ss-section-head p,html.dark .ss-about-copy>p,html.dark .ss-principle small{color:var(--ss-muted)!important}
+html.dark .ss-category-section{background:#1b231d!important}
+html.dark .ss-category-card,html.dark .studio-card,html.dark .about-value-card,html.dark .filter-bar,html.dark .auth-card,html.dark .auth-v2-panel,html.dark .modal-card,html.dark .profile-menu,html.dark .profile-trigger,html.dark .mobile-toggle,html.dark .empty-state{background:var(--ss-white)!important;border-color:var(--ss-line)!important;color:var(--ss-ink)!important}
+html.dark .ss-category-card strong,html.dark .ss-category-card h3,html.dark .studio-card h2,html.dark .studio-card h3,html.dark .studio-card-title h3,html.dark .about-value-card h3,html.dark .auth-card h1,html.dark .auth-card h2,html.dark .auth-v2-panel h1,html.dark .auth-v2-panel h2,html.dark .modal-card h2,html.dark .empty-state h3{color:var(--ss-ink)!important}
+html.dark .ss-category-card small,html.dark .studio-card p,html.dark .studio-card .studio-meta,html.dark .about-value-card p,html.dark .empty-state p{color:var(--ss-muted)!important}
+html.dark .search-field,html.dark .select-filter{color:var(--ss-muted)!important}
+html.dark .search-field input,html.dark .select-filter select,html.dark .form-stack input,html.dark .form-stack textarea,html.dark .form-stack select,html.dark .input-icon input,html.dark input,html.dark textarea,html.dark select{background:#18211b!important;color:#f3f1e9!important;border-color:#46564a!important;caret-color:#ffad98}
+html.dark input::placeholder,html.dark textarea::placeholder{color:#a6b2a7!important;opacity:1}
+html.dark .form-stack label{color:#e9eee7!important}
+html.dark .filter-bar{box-shadow:0 8px 24px rgba(0,0,0,.18)!important}
+html.dark .select-filter{border-left-color:var(--ss-line)!important}
+html.dark .availability-note,html.dark .price-breakdown{background:#18211b!important;border-color:var(--ss-line)!important;color:var(--ss-muted)!important}
+html.dark .btn-dark,html.dark .btn-dark:hover,html.dark .btn-full.btn-dark{background:#e98269!important;border-color:#e98269!important;color:#171b17!important}
+html.dark .btn-outline,html.dark .btn-outline:hover{background:#29372e!important;border-color:#728477!important;color:#f3f1e9!important}
+html.dark .btn-ghost,html.dark .btn-ghost:hover{background:rgba(255,255,255,.045)!important;border-color:#526256!important;color:#f3f1e9!important}
+html.dark .btn-light,html.dark .btn-light:hover{background:#f3f0e8!important;border-color:#f3f0e8!important;color:#191d1a!important}
+html.dark .studio-view-details{background:linear-gradient(110deg,#e98269 0%,#cf5964 100%)!important;border-color:#e98269!important;color:#fff!important}
+html.dark .profile-menu a,html.dark .profile-menu button{color:#f3f1e9!important}
+html.dark .profile-menu a:hover,html.dark .profile-menu button:hover{background:#34463a!important}
+html.dark .page-hero .eyebrow,html.dark .eyebrow,html.dark .ss-kicker{color:#ffad98!important}
+html.dark .ss-host-band{background:#302923!important;color:#f3f1e9!important}
+html.dark .ss-host-band h2{color:#f3f1e9!important}
+html.dark .ss-host-band p{color:#c7c4b9!important}
+html.dark .ss-host-band .ss-kicker{color:#ffad98!important}
+html.dark .how-page-note-inner,html.dark .about-page-cta-inner{background:linear-gradient(118deg,#252c26 0%,#302827 50%,#233329 100%)!important;border-color:var(--ss-line)!important}
+html.dark .about-page-intro-grid>div:last-child,html.dark .how-page-note p,html.dark .about-page-cta p{color:var(--ss-muted)!important}
+html.dark .content-copy h2,html.dark .content-copy h3,html.dark .content-copy h4{color:#f3f1e9!important}
+html.dark .content-copy p,html.dark .content-copy li{color:#c2cbc2!important}
+html.dark .content-copy a{color:#ffad98!important}
+html.dark .not-found{color:#f3f1e9!important}
+html.dark .not-found p{color:var(--ss-muted)!important}
+html.dark .site-footer{background:#101612!important;color:#f4f1e9!important}
+html.dark .site-footer :where(h1,h2,h3,h4,h5,strong,b){color:#f4f1e9!important}
+html.dark .site-footer :where(p,small,span,li,dt,dd,address,.muted,.footer-copy,.footer-bottom){color:#c2ccc3!important}
+html.dark .site-footer a{color:#e2e9e2!important}
+html.dark .site-footer a:hover{color:#fff!important}
+html.dark .site-footer .brand-accent{color:#ffad98!important}
+html.dark .status-pending{background:#473a24;color:#ffd58b}
+html.dark .status-confirmed{background:#1e4934;color:#a9e7bc}
+html.dark .status-cancelled{background:#4a2929;color:#ffb0a8}
+html.dark hr{border-color:var(--ss-line)}
+html:not(.dark) .btn-dark,html:not(.dark) .btn-dark:hover{color:#fff!important}
+html:not(.dark) .btn-light,html:not(.dark) .btn-light:hover{color:#191d1a!important}
+@media(prefers-reduced-motion:reduce){body{transition:none!important}}
+`);
+console.log("StudioSpace unified light/dark theme tokens and component contrast applied.");
