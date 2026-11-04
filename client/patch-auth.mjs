@@ -2008,3 +2008,9 @@ html:not(.dark) .btn-light,html:not(.dark) .btn-light:hover{color:#191d1a!import
 @media(prefers-reduced-motion:reduce){body{transition:none!important}}
 `);
 console.log("StudioSpace unified light/dark theme tokens and component contrast applied.");
+
+// Always present the Google account chooser instead of silently reusing an active Google session.
+replaceOnce("src/lib/auth.ts",
+  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET }',
+  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, prompt: "select_account" }',
+  "always show Google account chooser");
