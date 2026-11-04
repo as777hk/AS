@@ -1117,4 +1117,18 @@ body::after {
 `
 );
 
+
+replaceOnce(
+  "src/components/footer.tsx",
+  '<span><Link href="/terms">Terms of Use</Link> · Made for the makers.</span>',
+  '<span><Link href="/terms">Terms of Use</Link> · <a className="footer-home-link" href="/" aria-label="Go to StudioSpace home" onClick={(event) => { if (window.location.pathname === "/" && !window.location.hash) { event.preventDefault(); window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); } }}>Home</a> · Made for the makers.</span>',
+  "Add a reliable Home link to the bottom footer line"
+);
+replaceOnce(
+  "src/components/footer.tsx",
+  '<Link href="/" className="brand footer-brand">',
+  '<Link href="/" className="brand footer-brand" onClick={(event) => { if (window.location.pathname === "/" && !window.location.hash) { event.preventDefault(); window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); } }}>',
+  "Make the footer brand return to the top when already on Home"
+);
+
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
