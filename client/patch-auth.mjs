@@ -2482,3 +2482,19 @@ replaceOnce("src/lib/auth-client.ts",
   'plugins: [jwtClient(), emailOTPClient(), twoFactorClient({ twoFactorPage: "/two-factor" })]',
   'plugins: [jwtClient(), emailOTPClient(), phoneNumberClient(), twoFactorClient({ twoFactorPage: "/two-factor" })]',
   "keep the phone verification and TOTP client plugins enabled");
+
+// StudioSpace login polish: keep callbacks and issue a fresh CAPTCHA for every retry.
+replaceOnce("src/app/two-factor/page.tsx",
+  'search.get("callbackUrl")',
+  'search.get("callbackUrl")||search.get("callbackURL")',
+  "preserve the original destination from Better Auth MFA callback");
+
+replaceOnce("src/app/login/login-client.tsx",
+  'if(!v.ok){await loadCaptcha();throw new Error(p.message||"Complete the new CAPTCHA challenge.")}}\n  const result=await authClient.signIn.email',
+  'if(!v.ok){await loadCaptcha();throw new Error(p.message||"Complete the new CAPTCHA challenge.")}setCaptchaId("");setCaptchaImage("");setCaptchaAnswer("");}\n  const result=await authClient.signIn.email',
+  "clear each one-time login challenge after successful CAPTCHA verification");
+
+replaceOnce("src/app/as/page.tsx",
+  'if(!v.ok){await loadCaptcha();throw new Error(p.message||"Complete the new CAPTCHA challenge.")}}\n  const result=await authClient.signIn.email',
+  'if(!v.ok){await loadCaptcha();throw new Error(p.message||"Complete the new CAPTCHA challenge.")}setCaptchaId("");setCaptchaImage("");setCaptchaAnswer("");}\n  const result=await authClient.signIn.email',
+  "clear each one-time admin login challenge after successful CAPTCHA verification");
