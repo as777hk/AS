@@ -1220,7 +1220,7 @@ export function ScrollMotion() {
     let observer: IntersectionObserver | null = null;
     const attachReveal = (scope: ParentNode) => {
       if (reduced.matches || !("IntersectionObserver" in window) || !observer) return;
-      if (scope instanceof Element && scope.matches(revealSelector)) {
+      if (scope instanceof HTMLElement && scope.matches(revealSelector)) {
         if (scope.dataset.ssMotionReady !== "true") {
           scope.dataset.ssMotionReady = "true";
           scope.classList.add("ss-reveal");
@@ -1228,7 +1228,8 @@ export function ScrollMotion() {
           observer.observe(scope);
         }
       }
-      scope.querySelectorAll<HTMLElement>(revealSelector).forEach((item, index) => {
+      scope.querySelectorAll(revealSelector).forEach((node, index) => {
+        const item = node as HTMLElement;
         if (item.dataset.ssMotionReady === "true") return;
         item.dataset.ssMotionReady = "true";
         item.classList.add("ss-reveal");
