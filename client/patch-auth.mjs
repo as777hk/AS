@@ -2030,3 +2030,125 @@ replaceOnce("src/lib/auth.ts",
 // Generate the separate administrator console. Its data endpoints enforce authorization again on the API server.
 mkdirSync("src/app/admin", { recursive: true });
 writeFileSync("src/app/admin/page.tsx", "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport { useRouter } from \"next/navigation\";\nimport { SiteShell } from \"@/components/site-shell\";\nimport { authClient } from \"@/lib/auth-client\";\n\ntype Overview = { users: number; studios: number; bookings: number; pendingBookings: number; confirmedBookings: number };\ntype Member = { _id: string; name?: string; email?: string; createdAt?: string; emailVerified?: boolean };\ntype Studio = { _id: string; title: string; category: string; ownerName?: string; ownerEmail?: string; location?: string };\ntype Booking = { _id: string; studioTitle: string; customerName?: string; customerEmail?: string; date: string; startTime: string; endTime: string; status: string; totalAmount?: number };\n\nasync function readAdmin<T>(path: string): Promise<T> {\n  const response = await fetch(\"/api/server/admin/\" + path, { credentials: \"same-origin\", cache: \"no-store\" });\n  const payload = await response.json().catch(() => ({}));\n  if (!response.ok) {\n    const error = new Error(payload.message || \"Unable to load administrator data.\") as Error & { status?: number };\n    error.status = response.status;\n    throw error;\n  }\n  return payload as T;\n}\n\nconst cardStyle: React.CSSProperties = { background: \"var(--surface, #fff)\", border: \"1px solid var(--line, #ddd)\", borderRadius: 16, padding: 20, minWidth: 0 };\nconst tableStyle: React.CSSProperties = { width: \"100%\", borderCollapse: \"collapse\", textAlign: \"left\", fontSize: 14 };\nconst cellStyle: React.CSSProperties = { padding: \"12px 10px\", borderBottom: \"1px solid var(--line, #ddd)\", verticalAlign: \"top\" };\n\nexport default function AdminPage() {\n  const router = useRouter();\n  const { data: session, isPending } = authClient.useSession();\n  const [overview, setOverview] = useState<Overview | null>(null);\n  const [users, setUsers] = useState<Member[]>([]);\n  const [studios, setStudios] = useState<Studio[]>([]);\n  const [bookings, setBookings] = useState<Booking[]>([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(\"\");\n\n  useEffect(() => {\n    if (!isPending && !session) router.replace(\"/login?callbackUrl=%2Fadmin\");\n  }, [isPending, session, router]);\n\n  useEffect(() => {\n    if (isPending || !session) return;\n    let active = true;\n    (async () => {\n      try {\n        await readAdmin<{ data: { role: string } }>(\"me\");\n        const [stats, memberResult, studioResult, bookingResult] = await Promise.all([\n          readAdmin<{ data: Overview }>(\"overview\"),\n          readAdmin<{ data: Member[] }>(\"users\"),\n          readAdmin<{ data: Studio[] }>(\"studios\"),\n          readAdmin<{ data: Booking[] }>(\"bookings\"),\n        ]);\n        if (!active) return;\n        setOverview(stats.data);\n        setUsers(memberResult.data || []);\n        setStudios(studioResult.data || []);\n        setBookings(bookingResult.data || []);\n      } catch (err) {\n        if (!active) return;\n        const status = (err as Error & { status?: number }).status;\n        if (status === 401) {\n          setError(\"Your administrator session is not active. Please sign in again.\");\n          router.replace(\"/login?callbackUrl=%2Fadmin\");\n        } else if (status === 403) {\n          setError(\"This account does not have administrator access.\");\n          router.replace(\"/dashboard\");\n        } else {\n          setError(err instanceof Error ? err.message : \"Could not load the admin console.\");\n        }\n      } finally {\n        if (active) setLoading(false);\n      }\n    })();\n    return () => { active = false; };\n  }, [isPending, session, router]);\n\n  return <SiteShell>\n    <section className=\"page-hero\"><div className=\"container\">\n      <span className=\"eyebrow\">RESTRICTED MANAGEMENT AREA</span>\n      <h1>Admin <em>console.</em></h1>\n      <p>Platform operations and account oversight for approved administrators only.</p>\n    </div></section>\n    <section className=\"container section\">\n      {loading ? <p role=\"status\">Verifying administrator access and loading platform data…</p> : error ? <p role=\"alert\">{error}</p> : <>\n        <div style={{ display: \"grid\", gridTemplateColumns: \"repeat(auto-fit,minmax(160px,1fr))\", gap: 14, marginBottom: 28 }}>\n          {[\n            [\"Registered users\", overview?.users ?? 0],\n            [\"Studio listings\", overview?.studios ?? 0],\n            [\"All bookings\", overview?.bookings ?? 0],\n            [\"Pending requests\", overview?.pendingBookings ?? 0],\n            [\"Confirmed bookings\", overview?.confirmedBookings ?? 0],\n          ].map(([label, value]) => <div key={String(label)} style={cardStyle}><small style={{ color: \"var(--muted)\" }}>{label}</small><div style={{ fontSize: 30, fontWeight: 700, marginTop: 8 }}>{value}</div></div>)}\n        </div>\n        <div style={{ display: \"grid\", gap: 22 }}>\n          <section style={cardStyle}><h2>Recent members</h2><div style={{ overflowX: \"auto\" }}><table style={tableStyle}><thead><tr><th style={cellStyle}>Name</th><th style={cellStyle}>Email</th><th style={cellStyle}>Joined</th><th style={cellStyle}>Email status</th></tr></thead><tbody>\n            {users.map((member) => <tr key={member._id}><td style={cellStyle}>{member.name || \"—\"}</td><td style={cellStyle}>{member.email || \"—\"}</td><td style={cellStyle}>{member.createdAt ? new Date(member.createdAt).toLocaleDateString() : \"—\"}</td><td style={cellStyle}>{member.emailVerified ? \"Verified\" : \"Not verified\"}</td></tr>)}\n            {!users.length && <tr><td style={cellStyle} colSpan={4}>No members found.</td></tr>}\n          </tbody></table></div></section>\n          <section style={cardStyle}><h2>Studio listings</h2><div style={{ overflowX: \"auto\" }}><table style={tableStyle}><thead><tr><th style={cellStyle}>Studio</th><th style={cellStyle}>Category</th><th style={cellStyle}>Host</th><th style={cellStyle}>Location</th></tr></thead><tbody>\n            {studios.map((studio) => <tr key={studio._id}><td style={cellStyle}>{studio.title}</td><td style={cellStyle}>{studio.category}</td><td style={cellStyle}>{studio.ownerName || studio.ownerEmail || \"—\"}</td><td style={cellStyle}>{studio.location || \"—\"}</td></tr>)}\n            {!studios.length && <tr><td style={cellStyle} colSpan={4}>No studio listings found.</td></tr>}\n          </tbody></table></div></section>\n          <section style={cardStyle}><h2>Booking activity</h2><div style={{ overflowX: \"auto\" }}><table style={tableStyle}><thead><tr><th style={cellStyle}>Studio</th><th style={cellStyle}>Creator</th><th style={cellStyle}>Date & time</th><th style={cellStyle}>Status</th><th style={cellStyle}>Total</th></tr></thead><tbody>\n            {bookings.map((booking) => <tr key={booking._id}><td style={cellStyle}>{booking.studioTitle}</td><td style={cellStyle}>{booking.customerName || booking.customerEmail || \"—\"}</td><td style={cellStyle}>{booking.date} · {booking.startTime}–{booking.endTime}</td><td style={cellStyle}>{booking.status}</td><td style={cellStyle}>{typeof booking.totalAmount === \"number\" ? \"$\" + booking.totalAmount.toFixed(2) : \"—\"}</td></tr>)}\n            {!bookings.length && <tr><td style={cellStyle} colSpan={5}>No bookings found.</td></tr>}\n          </tbody></table></div></section>\n        </div>\n      </>}\n    </section>\n  </SiteShell>;\n}\n");
+
+
+// Enforce one shared password for the two allowlisted admin emails, regardless of
+// any older password stored on their account. Non-admin member passwords are unchanged.
+replaceOnce("src/lib/auth.ts",
+  'import { betterAuth } from "better-auth";',
+  'import { betterAuth } from "better-auth";\nimport { APIError, createAuthMiddleware } from "better-auth/api";',
+  "admin password policy imports");
+replaceOnce("src/lib/auth.ts",
+  'const adminEmails = new Set((process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean));',
+  'const adminEmails = new Set((process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean));\nconst adminLoginPassword = process.env.ADMIN_LOGIN_PASSWORD || "";',
+  "server-only admin login password");
+replaceOnce("src/lib/auth.ts",
+  'role: adminEmails.has(user.email.toLowerCase()) ? "admin" : "user",',
+  'role: adminEmails.has(user.email.toLowerCase()) && user.adminPasswordVerified === true ? "admin" : "user",',
+  "require admin password authentication for role claim");
+replaceOnce("src/lib/auth.ts",
+  'export const auth = betterAuth({',
+  `export const auth = betterAuth({
+  user: {
+    additionalFields: {
+      adminPasswordVerified: { type: "boolean", required: false, defaultValue: false, input: false }
+    }
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/email" && ctx.path !== "/sign-up/email") return;
+      const email = typeof ctx.body?.email === "string" ? ctx.body.email.trim().toLowerCase() : "";
+      if (!adminEmails.has(email)) return;
+      const suppliedPassword = typeof ctx.body?.password === "string" ? ctx.body.password : "";
+      if (!adminLoginPassword || suppliedPassword !== adminLoginPassword) {
+        throw new APIError("UNAUTHORIZED", { message: "Invalid email or password." });
+      }
+      if (ctx.path === "/sign-in/email") {
+        const found = await ctx.context.internalAdapter.findUserByEmail(email, { includeAccounts: true });
+        const user = found?.user;
+        if (!user) throw new APIError("UNAUTHORIZED", { message: "Invalid email or password." });
+        const accounts = found.accounts || await ctx.context.internalAdapter.findAccounts(user.id);
+        const credentialAccount = accounts.find((account) => account.providerId === "credential");
+        const passwordHash = await ctx.context.password.hash(adminLoginPassword);
+        if (credentialAccount) {
+          await ctx.context.internalAdapter.updatePassword(user.id, passwordHash);
+        } else {
+          await ctx.context.internalAdapter.createAccount({
+            userId: user.id,
+            accountId: user.id,
+            providerId: "credential",
+            password: passwordHash
+          });
+        }
+      }
+    }),
+    after: createAuthMiddleware(async (ctx) => {
+      const session = ctx.context.newSession;
+      const user = session?.user;
+      const email = typeof user?.email === "string" ? user.email.toLowerCase() : "";
+      if (!user || !adminEmails.has(email)) return;
+      if (ctx.path === "/sign-in/email") {
+        await ctx.context.internalAdapter.updateUser(user.id, { adminPasswordVerified: true });
+      } else if (ctx.path.startsWith("/callback/")) {
+        // OAuth can still be used by ordinary members, but it must never grant admin-console access.
+        await ctx.context.internalAdapter.updateUser(user.id, { adminPasswordVerified: false });
+      }
+    })
+  },`,
+  "enforce admin credentials and mark email-password sessions");
+
+// Put the admin console at the site root for admin sessions. The public marketplace homepage
+// remains the root experience for visitors and ordinary members.
+const marketplacePagePath = "src/app/marketplace-home.tsx";
+if (!existsSync(marketplacePagePath)) {
+  writeFileSync(marketplacePagePath, readFileSync("src/app/page.tsx", "utf8"));
+}
+writeFileSync("src/components/root-role-gate.tsx", `"use client";
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import AdminPage from "@/app/admin/page";
+
+export default function RootRoleGate({ children }: { children: React.ReactNode }) {
+  const { data: session, isPending } = authClient.useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    if (isPending) return;
+    if (!session) {
+      setIsAdmin(false);
+      setChecked(true);
+      return;
+    }
+    let active = true;
+    fetch("/api/server/admin/me", { credentials: "same-origin", cache: "no-store" })
+      .then((response) => {
+        if (active) setIsAdmin(response.ok);
+      })
+      .catch(() => {
+        if (active) setIsAdmin(false);
+      })
+      .finally(() => {
+        if (active) setChecked(true);
+      });
+    return () => { active = false; };
+  }, [isPending, session?.user?.id]);
+
+  if (isPending || (session && !checked)) {
+    return <main className="container section" aria-live="polite"><p>Loading StudioSpace…</p></main>;
+  }
+  return isAdmin ? <AdminPage /> : <>{children}</>;
+}
+`);
+writeFileSync("src/app/page.tsx", `import RootRoleGate from "@/components/root-role-gate";
+import MarketplaceHome from "./marketplace-home";
+
+export default function Home() {
+  return <RootRoleGate><MarketplaceHome /></RootRoleGate>;
+}
+`);
+writeFileSync("src/app/admin/page.tsx", `import { redirect } from "next/navigation";
+export default function AdminRoute() {
+  redirect("/");
+}
+`);
