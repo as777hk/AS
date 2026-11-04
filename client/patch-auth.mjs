@@ -1768,4 +1768,166 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
 
 console.log("StudioSpace full-site cursor spotlight, hover interactions and interactive element motion applied.");
 
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* Theme normalization: legacy app tokens now follow the StudioSpace design tokens. */
+html:not(.dark) {
+  color-scheme: light;
+  --bg: var(--ss-paper);
+  --surface: var(--ss-white);
+  --text: var(--ss-ink);
+  --muted: #5f665f;
+  --line: var(--ss-line);
+  --accent: var(--ss-accent-dark);
+  --accent-soft: #f5e6dd;
+  --forest: #203c35;
+  --shadow: var(--ss-shadow);
+  --foreground: var(--ss-ink);
+  --card: var(--ss-white);
+  --border: var(--ss-line);
+}
+html.dark {
+  color-scheme: dark;
+  --bg: var(--ss-paper);
+  --surface: var(--ss-white);
+  --text: var(--ss-ink);
+  --muted: #c2cbc2;
+  --line: var(--ss-line);
+  --accent: #f3a08a;
+  --accent-soft: #3b2d26;
+  --forest: #293a30;
+  --shadow: var(--ss-shadow);
+  --foreground: var(--ss-ink);
+  --card: var(--ss-white);
+  --border: var(--ss-line);
+}
+
+/* Footer is deliberately a dark anchor in both themes. Its children must not
+   inherit the page's light/dark body text tokens. */
+.site-footer,
+html.dark .site-footer {
+  background: #101612 !important;
+  border-top-color: rgba(255,255,255,.12) !important;
+  color: #f4f1e9 !important;
+}
+.site-footer :where(h1,h2,h3,h4,h5,strong,b),
+html.dark .site-footer :where(h1,h2,h3,h4,h5,strong,b) {
+  color: #f4f1e9 !important;
+}
+.site-footer :where(p,small,span,li,dt,dd,address,.muted,.text-muted,.footer-copy,.footer-bottom),
+html.dark .site-footer :where(p,small,span,li,dt,dd,address,.muted,.text-muted,.footer-copy,.footer-bottom) {
+  color: #c2ccc3 !important;
+}
+.site-footer a,
+html.dark .site-footer a,
+.site-footer .footer-grid > div > a:not(.brand),
+html.dark .site-footer .footer-grid > div > a:not(.brand) {
+  color: #e2e9e2 !important;
+}
+.site-footer a:hover,
+html.dark .site-footer a:hover {
+  color: #ffffff !important;
+}
+.site-footer .brand,
+.site-footer .brand > span,
+html.dark .site-footer .brand,
+html.dark .site-footer .brand > span {
+  color: #f4f1e9 !important;
+}
+.site-footer .brand .brand-accent,
+html.dark .site-footer .brand .brand-accent {
+  color: #ffad98 !important;
+}
+.site-footer .brand small,
+html.dark .site-footer .brand small {
+  color: #c2ccc3 !important;
+}
+.site-footer .socials a,
+html.dark .site-footer .socials a {
+  color: #f4f1e9 !important;
+  border-color: rgba(255,255,255,.32) !important;
+}
+.site-footer .footer-bottom,
+.site-footer .footer-bottom span,
+html.dark .site-footer .footer-bottom,
+html.dark .site-footer .footer-bottom span {
+  color: #c2ccc3 !important;
+}
+
+/* Form helper copy remains readable on the light auth panel. */
+html:not(.dark) .auth-v2-intro,
+html:not(.dark) .auth-v2-bottom {
+  color: #5f665f !important;
+}
+html:not(.dark) .auth-v2-note {
+  color: #5f665f !important;
+}
+html:not(.dark) .auth-v2-divider {
+  color: #626a62 !important;
+}
+html:not(.dark) .auth-v2-password-rules span {
+  color: #62695f !important;
+}
+html.dark .auth-v2-panel .eyebrow,
+html.dark .auth-v2-panel .ss-kicker {
+  color: #ffad98 !important;
+}
+html.dark .auth-v2-intro,
+html.dark .auth-v2-note,
+html.dark .auth-v2-divider,
+html.dark .auth-v2-bottom,
+html.dark .auth-v2-password-rules span {
+  color: #c2cbc2 !important;
+}
+html.dark .auth-v2-password-rules span.valid {
+  color: #a9e7bc !important;
+}
+
+/* Legal copy used to inherit near-black text while its dark page surface changed. */
+html:not(.dark) .content-copy h2 {
+  color: #191d1a !important;
+}
+html:not(.dark) .content-copy p,
+html:not(.dark) .content-copy li {
+  color: #4f5750 !important;
+}
+html:not(.dark) .content-copy a {
+  color: #a83f30 !important;
+}
+html.dark .content-copy h2,
+html.dark .content-copy h3,
+html.dark .content-copy h4 {
+  color: #f4f1e9 !important;
+}
+html.dark .content-copy p,
+html.dark .content-copy li {
+  color: #c2cbc2 !important;
+}
+html.dark .content-copy a {
+  color: #ffad98 !important;
+}
+
+/* Keep accent labels and primary actions legible in either color scheme. */
+html.dark .eyebrow,
+html.dark .ss-kicker,
+html.dark .auth-v2-panel .eyebrow {
+  color: #ffad98 !important;
+}
+html:not(.dark) .btn-dark,
+html:not(.dark) .btn-dark:hover {
+  color: #ffffff !important;
+}
+html.dark .btn-dark,
+html.dark .btn-dark:hover {
+  color: #ffffff !important;
+}
+html:not(.dark) .btn-light,
+html:not(.dark) .btn-light:hover {
+  color: #172019 !important;
+}
+html.dark .btn-light,
+html.dark .btn-light:hover {
+  color: #172019 !important;
+}
+`);
+
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
