@@ -245,7 +245,7 @@ replaceOnce("src/components/footer.tsx", 'import { Instagram, Linkedin, Facebook
     const socialStart = footerSource.indexOf('<div className="socials">');
     const socialClose = socialStart >= 0 ? footerSource.indexOf("</div>", socialStart) : -1;
     if (socialStart < 0 || socialClose < 0) throw new Error("Could not locate the footer social links block.");
-    const replacement = '<div className="socials"><a href="https://github.com" aria-label="GitHub" target="_blank" rel="noreferrer"><Github/></a><a href="https://www.linkedin.com" aria-label="LinkedIn" target="_blank" rel="noreferrer"><Linkedin/></a><a href="mailto:" aria-label="Email StudioSpace"><Mail/></a><a href="https://www.facebook.com" aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook/></a></div>';
+    const replacement = '<div className="socials"><a href="https://github.com/Annika-Islam" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><Github/></a><a href="https://www.linkedin.com/in/as-full-stack-dev/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Linkedin/></a><a href="mailto:" aria-label="Email StudioSpace"><Mail/></a><a href="https://www.facebook.com" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><Facebook/></a></div>';
     footerSource = footerSource.slice(0, socialStart) + replacement + footerSource.slice(socialClose + 6);
     writeFileSync(footerPath, footerSource);
   }
