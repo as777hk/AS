@@ -2156,3 +2156,264 @@ export default function AdminRoute() {
   redirect("/");
 }
 `);
+
+
+// Dedicated administrator sign-in portal at /as. This route has its own visual
+// language and only allows the two explicitly approved admin identities to proceed.
+mkdirSync("src/app/as", { recursive: true });
+writeFileSync("src/app/as/page.tsx", `"use client";
+
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowUpRight, Fingerprint, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { authClient, syncAuthCookie } from "@/lib/auth-client";
+import "./portal.css";
+
+const allowedAdminEmails = new Set([
+  "sam.scaleup.as777@gmail.com",
+  "annikamuni2006@gmail.com"
+]);
+
+export default function AdminSignInPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function signIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!allowedAdminEmails.has(normalizedEmail)) {
+      setError("This identity is not on the administrator access list.");
+      return;
+    }
+    if (!password) {
+      setError("Enter the administrator password to continue.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const result = await authClient.signIn.email({
+        email: normalizedEmail,
+        password
+      });
+      if (result.error) throw new Error("The email or administrator password is incorrect.");
+
+      await syncAuthCookie();
+      const check = await fetch("/api/server/admin/me", {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+      if (!check.ok) {
+        await fetch("/api/auth/cookie", { method: "DELETE", credentials: "same-origin" }).catch(() => undefined);
+        throw new Error("The account could not be verified for administrator access.");
+      }
+
+      toast.success("Administrator access verified.");
+      router.replace("/");
+      router.refresh();
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Administrator sign-in failed.";
+      setError(message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="as-portal">
+      <div className="as-portal-grain" aria-hidden="true" />
+      <header className="as-portal-top">
+        <Link href="/" className="as-portal-brand" aria-label="Return to StudioSpace">
+          <span className="as-portal-brand-mark">S<span>/</span></span>
+          <span className="as-portal-brand-name">STUDIOSPACE <small>CONTROL ROOM</small></span>
+        </Link>
+        <Link href="/" className="as-portal-exit"><ArrowLeft size={15} /> Back to marketplace</Link>
+      </header>
+
+      <section className="as-portal-layout">
+        <div className="as-portal-intro">
+          <div className="as-portal-kicker"><span className="as-live-dot" /> RESTRICTED ENVIRONMENT <span className="as-portal-kicker-line" /></div>
+          <div className="as-portal-display">
+            <span className="as-portal-index">STUDIO / ADMIN / 01</span>
+            <h1>Behind the<br /><em>creative space.</em></h1>
+            <p>The operational side of StudioSpace. A private workspace for the people entrusted to manage the platform.</p>
+          </div>
+          <div className="as-portal-footnote">
+            <span className="as-portal-footnote-icon"><Fingerprint size={19} /></span>
+            <span><strong>Identity verified. Access controlled.</strong><small>Every session is checked against the administrator access policy.</small></span>
+          </div>
+        </div>
+
+        <div className="as-portal-login-wrap">
+          <div className="as-portal-login-card">
+            <div className="as-portal-card-top">
+              <span className="as-portal-shield"><ShieldCheck size={21} /></span>
+              <span className="as-portal-classification">ADMINISTRATOR ACCESS <i>PRIVATE</i></span>
+            </div>
+            <h2>Sign in to control.</h2>
+            <p className="as-portal-card-copy">Use one of the two authorized administrator accounts and the designated admin password.</p>
+
+            <form onSubmit={signIn} className="as-portal-form">
+              <label htmlFor="as-admin-email">AUTHORIZED EMAIL</label>
+              <div className="as-portal-input-wrap">
+                <Fingerprint size={17} />
+                <input
+                  id="as-admin-email"
+                  type="email"
+                  autoComplete="username"
+                  spellCheck={false}
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="admin@studiospace.com"
+                />
+              </div>
+
+              <label htmlFor="as-admin-password">ADMINISTRATOR PASSWORD</label>
+              <div className="as-portal-input-wrap">
+                <KeyRound size={17} />
+                <input
+                  id="as-admin-password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Enter secure password"
+                />
+              </div>
+
+              {error && <p className="as-portal-error" role="alert">{error}</p>}
+
+              <button className="as-portal-submit" type="submit" disabled={busy}>
+                <span>{busy ? "VERIFYING CREDENTIALS…" : "ENTER CONTROL ROOM"}</span>
+                {busy ? <span className="as-portal-spinner" /> : <ArrowUpRight size={18} />}
+              </button>
+            </form>
+
+            <div className="as-portal-security-note"><LockKeyhole size={14} /><span>Encrypted session · Restricted to approved identities</span></div>
+          </div>
+          <div className="as-portal-card-caption"><span>STUDIOSPACE / PRIVATE ACCESS</span><span>NO PUBLIC REGISTRATION</span></div>
+        </div>
+      </section>
+
+      <footer className="as-portal-footer">
+        <span>© {new Date().getFullYear()} StudioSpace</span>
+        <span>CONTROLLED ACCESS ONLY</span>
+        <span>SECURITY LEVEL <b>ADMIN</b></span>
+      </footer>
+    </main>
+  );
+}
+`);
+
+writeFileSync("src/app/as/portal.css", `
+.as-portal {
+  --as-night: #101713;
+  --as-panel: #18211b;
+  --as-line: rgba(231,239,226,.12);
+  --as-muted: #9aa79a;
+  --as-soft: #d7dfd3;
+  --as-lime: #c5e59c;
+  --as-coral: #f1a18a;
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 0 clamp(22px,5.5vw,88px);
+  background:
+    radial-gradient(ellipse at 16% 42%,rgba(112,143,101,.16),transparent 34%),
+    radial-gradient(ellipse at 90% 85%,rgba(190,119,92,.12),transparent 32%),
+    var(--as-night);
+  color: #f4f2e9;
+  font-family: var(--font-body,"DM Sans",sans-serif);
+}
+.as-portal::before {
+  position:absolute;inset:0;pointer-events:none;content:"";
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:linear-gradient(90deg,transparent,black 18%,black 85%,transparent);
+}
+.as-portal-grain { position:absolute;inset:0;pointer-events:none;opacity:.1;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");}
+.as-portal-top,.as-portal-layout,.as-portal-footer { position:relative;z-index:1; }
+.as-portal-top { min-height:92px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--as-line); }
+.as-portal-brand { display:flex;align-items:center;gap:12px;color:#f5f2e9;text-decoration:none; }
+.as-portal-brand-mark { width:37px;height:37px;display:grid;place-items:center;border:1px solid rgba(197,229,156,.65);border-radius:11px;color:var(--as-lime);font-family:Georgia,serif;font-size:22px;font-weight:700; }
+.as-portal-brand-mark span { color:var(--as-coral); }
+.as-portal-brand-name { font-size:11px;font-weight:800;letter-spacing:.15em; }
+.as-portal-brand-name small { display:block;margin-top:5px;color:var(--as-muted);font-size:8px;letter-spacing:.22em; }
+.as-portal-exit { display:inline-flex;align-items:center;gap:8px;color:#b8c2b5;font-size:12px;text-decoration:none;transition:color .2s; }
+.as-portal-exit:hover { color:var(--as-lime); }
+.as-portal-layout { width:min(1180px,100%);min-height:calc(100svh - 158px);display:grid;grid-template-columns:1fr minmax(360px,470px);align-items:center;gap:clamp(44px,9vw,140px);margin:0 auto;padding:60px 0 76px; }
+.as-portal-intro { display:flex;min-height:480px;flex-direction:column;justify-content:space-between;padding:20px 0; }
+.as-portal-kicker { display:flex;align-items:center;gap:10px;color:#c8d1c5;font-size:9px;font-weight:800;letter-spacing:.2em; }
+.as-live-dot { width:7px;height:7px;border-radius:50%;background:var(--as-lime);box-shadow:0 0 0 5px rgba(197,229,156,.09),0 0 18px rgba(197,229,156,.65); }
+.as-portal-kicker-line { width:46px;height:1px;margin-left:4px;background:linear-gradient(90deg,var(--as-lime),transparent); }
+.as-portal-display { max-width:650px;margin:55px 0; }
+.as-portal-index { color:#7d8c7d;font-size:9px;font-weight:800;letter-spacing:.22em; }
+.as-portal-display h1 { margin:22px 0 24px;color:#f3f0e6;font-family:"Playfair Display",Georgia,serif;font-size:clamp(3.8rem,7vw,6.7rem);font-weight:500;letter-spacing:-.065em;line-height:.91; }
+.as-portal-display h1 em { color:var(--as-lime);font-weight:500; }
+.as-portal-display p { max-width:420px;color:#aab5a8;font-size:14px;line-height:1.9; }
+.as-portal-footnote { display:flex;align-items:center;gap:13px;padding-top:20px;border-top:1px solid var(--as-line); }
+.as-portal-footnote-icon { width:39px;height:39px;display:grid;place-items:center;border:1px solid rgba(197,229,156,.25);border-radius:12px;color:var(--as-lime); }
+.as-portal-footnote strong,.as-portal-footnote small { display:block; }
+.as-portal-footnote strong { color:#e5e9df;font-size:11px; }
+.as-portal-footnote small { margin-top:5px;color:#849184;font-size:10px; }
+.as-portal-login-wrap { width:100%; }
+.as-portal-login-card { padding:clamp(26px,4vw,42px);border:1px solid rgba(228,237,222,.13);border-radius:20px;background:linear-gradient(145deg,rgba(34,46,37,.96),rgba(21,30,24,.96));box-shadow:0 30px 90px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.045); }
+.as-portal-card-top { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:34px; }
+.as-portal-shield { width:43px;height:43px;display:grid;place-items:center;border:1px solid rgba(197,229,156,.3);border-radius:13px;background:rgba(197,229,156,.07);color:var(--as-lime); }
+.as-portal-classification { display:flex;align-items:center;gap:9px;color:#9eaa9d;font-size:8px;font-weight:800;letter-spacing:.15em; }
+.as-portal-classification i { padding:5px 7px;border:1px solid rgba(241,161,138,.35);border-radius:5px;color:var(--as-coral);font-size:7px;font-style:normal;letter-spacing:.1em; }
+.as-portal-login-card h2 { margin:0;color:#f4f1e9;font-family:"Playfair Display",Georgia,serif;font-size:clamp(2rem,4vw,2.7rem);font-weight:500;letter-spacing:-.045em; }
+.as-portal-card-copy { margin:12px 0 29px;color:#98a598;font-size:12px;line-height:1.8; }
+.as-portal-form { display:grid;gap:10px; }
+.as-portal-form label { margin-top:7px;color:#bbc6b8;font-size:8px;font-weight:800;letter-spacing:.16em; }
+.as-portal-input-wrap { min-height:52px;display:flex;align-items:center;gap:12px;padding:0 15px;border:1px solid rgba(224,235,218,.13);border-radius:10px;background:rgba(8,14,10,.34);color:#819080;transition:border-color .2s,box-shadow .2s; }
+.as-portal-input-wrap:focus-within { border-color:rgba(197,229,156,.66);box-shadow:0 0 0 3px rgba(197,229,156,.08); }
+.as-portal-input-wrap input { width:100%;min-width:0;border:0;outline:0;background:transparent;color:#f4f2e9;font-size:12px; }
+.as-portal-input-wrap input::placeholder { color:#68776a; }
+.as-portal-error { margin:4px 0;padding:11px 13px;border:1px solid rgba(241,133,124,.28);border-radius:9px;background:rgba(143,53,49,.12);color:#ffb2a8;font-size:11px;line-height:1.6; }
+.as-portal-submit { min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:13px;padding:0 18px;border:0;border-radius:10px;background:var(--as-lime);color:#172018;font-size:9px;font-weight:900;letter-spacing:.16em;cursor:pointer;transition:transform .2s,background .2s,box-shadow .2s; }
+.as-portal-submit:hover { transform:translateY(-2px);background:#d6edb8;box-shadow:0 12px 26px rgba(197,229,156,.13); }
+.as-portal-submit:disabled { opacity:.65;cursor:wait;transform:none; }
+.as-portal-spinner { width:15px;height:15px;border:2px solid rgba(23,32,24,.25);border-top-color:#172018;border-radius:50%;animation:as-portal-spin .7s linear infinite; }
+@keyframes as-portal-spin { to { transform:rotate(360deg); } }
+.as-portal-security-note { display:flex;align-items:center;gap:8px;margin-top:22px;padding-top:17px;border-top:1px solid var(--as-line);color:#839083;font-size:9px; }
+.as-portal-security-note svg { color:var(--as-lime); }
+.as-portal-card-caption { display:flex;justify-content:space-between;gap:12px;margin-top:13px;color:#6f7e70;font-size:7px;font-weight:800;letter-spacing:.14em; }
+.as-portal-footer { min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:14px;border-top:1px solid var(--as-line);color:#768377;font-size:8px;font-weight:700;letter-spacing:.14em; }
+.as-portal-footer b { color:var(--as-lime);font-weight:800; }
+@media(max-width:900px) {
+  .as-portal-layout { grid-template-columns:1fr minmax(330px,430px);gap:36px; }
+  .as-portal-display h1 { font-size:clamp(3.2rem,6vw,5rem); }
+}
+@media(max-width:700px) {
+  .as-portal { padding:0 19px; }
+  .as-portal-top { min-height:76px; }
+  .as-portal-layout { min-height:auto;grid-template-columns:1fr;gap:35px;padding:50px 0 45px; }
+  .as-portal-intro { min-height:auto;padding:0; }
+  .as-portal-display { margin:35px 0 25px; }
+  .as-portal-display h1 { margin:15px 0;font-size:clamp(3.3rem,13vw,5.1rem); }
+  .as-portal-display p { max-width:500px;font-size:12px; }
+  .as-portal-footnote { display:none; }
+  .as-portal-login-card { padding:25px 22px; }
+  .as-portal-footer { flex-wrap:wrap;padding:15px 0;font-size:7px; }
+}
+@media(max-width:420px) {
+  .as-portal-top { align-items:flex-start;padding:18px 0;gap:10px; }
+  .as-portal-exit { margin-top:8px;font-size:10px; }
+  .as-portal-classification { font-size:7px; }
+  .as-portal-card-caption { font-size:6px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .as-portal *, .as-portal *::before, .as-portal *::after { animation-duration:.01ms!important;transition-duration:.01ms!important; }
+}
+`);
