@@ -2106,7 +2106,7 @@ if (!existsSync(marketplacePagePath)) {
 writeFileSync("src/components/root-role-gate.tsx", `"use client";
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import AdminPage from "@/app/admin/page";
+import AdminConsole from "@/components/admin-console";
 
 export default function RootRoleGate({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = authClient.useSession();
@@ -2137,7 +2137,7 @@ export default function RootRoleGate({ children }: { children: React.ReactNode }
   if (isPending || (session && !checked)) {
     return <main className="container section" aria-live="polite"><p>Loading StudioSpace…</p></main>;
   }
-  return isAdmin ? <AdminPage /> : <>{children}</>;
+  return isAdmin ? <AdminConsole /> : <>{children}</>;
 }
 `);
 writeFileSync("src/app/page.tsx", `import RootRoleGate from "@/components/root-role-gate";
@@ -2147,6 +2147,10 @@ export default function Home() {
   return <RootRoleGate><MarketplaceHome /></RootRoleGate>;
 }
 `);
+const adminConsoleSource = readFileSync("src/app/admin/page.tsx", "utf8")
+  .replaceAll('/login?callbackUrl=%2Fadmin', '/login?callbackUrl=%2F')
+  .replaceAll('router.replace("/dashboard")', 'router.replace("/")');
+writeFileSync("src/components/admin-console.tsx", adminConsoleSource);
 writeFileSync("src/app/admin/page.tsx", `import { redirect } from "next/navigation";
 export default function AdminRoute() {
   redirect("/");
