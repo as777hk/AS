@@ -122,4 +122,15 @@ When both server-side email variables are present, the server requires email ver
 
 If these environment variables are not configured, the existing password account flow remains enabled and the code options stay unavailable. Do not enable only the public flag without configuring the server-side sender.
 
-Phone-number verification is not enabled. It requires an SMS provider such as Twilio Verify and its own server-side credentials, delivery setup and phone-number verification flow.
+Phone-number verification uses the Better Auth Phone Number plugin with Twilio Verify. The code sends SMS verification requests from the server, checks the code with Twilio, stores the verified phone number on the signed-in member, and makes phone-code sign-in available for verified numbers.
+
+To activate SMS verification in Vercel:
+
+1. Create a Twilio account and a Verify Service in the Twilio Console.
+2. In **as-frontend**, add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_VERIFY_SERVICE_SID` as Sensitive environment variables for Production.
+3. Add `NEXT_PUBLIC_PHONE_OTP_ENABLED=true` as a Plain environment variable only after all three Twilio values are configured.
+4. Redeploy the frontend. Add the variables to Preview and Development as well when testing those environments.
+
+Phone numbers must be entered in international E.164 format, including the leading plus sign and country code (for example, `+8801XXXXXXXXX`). A member signs up with email first, then may verify a phone number on the Phone Verification page. The verified number can then be used for phone-code sign-in. Phone verification remains unavailable until a real Twilio Verify Service and credentials are configured.
+
+Email OTP and phone OTP are separate optional providers. Do not enable either public UI flag before the corresponding server credentials and sending identity are ready.
