@@ -2019,9 +2019,9 @@ replaceOnce("src/lib/auth.ts",
 // Assign roles only from a server-side allowlist. User sign-up data cannot set this claim.
 replaceOnce("src/lib/auth.ts",
   'const baseURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";',
-  'const baseURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";\\nconst adminEmails = new Set((process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean));',
+  'const baseURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";\nconst adminEmails = new Set((process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean));',
   "server-controlled admin email allowlist");
 replaceOnce("src/lib/auth.ts",
-  'email: user.email.toLowerCase(),\\n        name: user.name,',
-  'email: user.email.toLowerCase(),\\n        name: user.name,\\n        role: adminEmails.has(user.email.toLowerCase()) ? "admin" : "user",',
+  'email: user.email.toLowerCase(),\n        name: user.name,',
+  'email: user.email.toLowerCase(),\n        name: user.name,\n        role: adminEmails.has(user.email.toLowerCase()) ? "admin" : "user",',
   "sign server-assigned authorization role");
