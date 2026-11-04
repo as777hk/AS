@@ -1131,4 +1131,26 @@ replaceOnce(
   "Make the footer brand return to the top when already on Home"
 );
 
+
+writeFileSync(
+  "src/app/brand-refresh.css",
+  readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+.site-footer .footer-home-link {
+  display: inline-flex; min-height: 28px; align-items: center; justify-content: center;
+  margin-inline: 4px; padding: 4px 11px; border: 1px solid rgba(223,90,67,.42);
+  border-radius: 999px; color: var(--ss-accent-dark) !important;
+  font-size: .78rem; font-weight: 850; line-height: 1.2; text-decoration: none;
+  transition: background .2s ease, transform .2s ease, border-color .2s ease;
+}
+.site-footer .footer-home-link:hover {
+  transform: translateY(-1px); border-color: rgba(223,90,67,.72);
+  background: rgba(223,90,67,.1); color: var(--ss-accent-dark) !important;
+}
+.dark .site-footer .footer-home-link {
+  border-color: rgba(255,164,142,.42); color: #ffa48e !important;
+}
+.dark .site-footer .footer-home-link:hover { background: rgba(255,164,142,.12); }
+`
+);
+
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
