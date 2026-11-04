@@ -586,17 +586,54 @@ const copyFiles = [
   "src/app/login/login-client.tsx",
   "src/app/register/page.tsx",
   "src/app/phone-verify/page.tsx",
+  "src/app/add-studio/page.tsx",
+  "src/app/dashboard/page.tsx",
+  "src/app/my-bookings/page.tsx",
+  "src/app/my-listings/page.tsx",
+  "src/app/saved/page.tsx",
+  "src/app/studios/studios-client.tsx",
+  "src/app/studios/[id]/page.tsx",
+  "src/app/terms/page.tsx",
   "src/components/footer.tsx",
-  "src/components/navbar.tsx"
+  "src/components/navbar.tsx",
+  "src/components/studio-card.tsx",
+  "src/components/booking-modal.tsx"
 ];
+
+function cleanWebsiteCopy(value) {
+  return value
+    .replace(/(\\d)\\s*[–—−-]\\s*(\\d)/g, "$1 to $2")
+    .replace(/\\s*[–—−]\\s*/g, ", ")
+    .replace(/\\s+-\\s+/g, ", ")
+    .replace(/([A-Za-z])-([A-Za-z])/g, "$1 $2")
+    .replace(/\\s{2,}/g, " ")
+    .replace(/\\s+([,.!?;:])/g, "$1");
+}
+
 for (const filePath of copyFiles) {
   if (!existsSync(filePath)) continue;
   const source = readFileSync(filePath, "utf8");
-  const cleaned = source
-    .replace(/—/g, ",")
-    .replace(/–/g, " to ")
-    .replace(/>([^<>]*?)</g, (whole, text) => ">" + text.replace(/\s-\s/g, ", ") + "<");
+  let cleaned = source
+    .replace(/â/g, ", ")
+    .replace(/â/g, " to ")
+    .replace(/>([^<>]*?)</gs, (whole, text) => {
+      if (/[{}]/.test(text)) return whole;
+      return ">" + cleanWebsiteCopy(text) + "<";
+    });
   if (cleaned !== source) writeFileSync(filePath, cleaned);
 }
 
-console.log("StudioSpace phone OTP integration and member copy cleanup applied.");
+// Clean copy held in the homepage's data arrays as well as ordinary JSX text.
+const homepagePath = "src/app/page.tsx";
+if (existsSync(homepagePath)) {
+  let homepage = readFileSync(homepagePath, "utf8");
+  homepage = homepage
+    .replace(/(kicker|title|copy|imageAlt):\\s*"([^"]*)"/g, (_match, key, value) => key + ': "' + cleanWebsiteCopy(value) + '"')
+    .replace(/(THE CURRENT COLLECTION|START WITH YOUR MEDIUM|A CLEARER WAY TO BOOK|A MARKETPLACE FOR MAKERS)\\s*\\/\\s*0[1-4]\\b/g, "$1")
+    .replace(/Discover\\s*\\/\\s*Book\\s*\\/\\s*Make/g, "Discover, book and make")
+    .replace(/<div className="ss-hero-index">\\s*<strong>\\{slide\\.index\\}<\\/strong>\\s*<span>StudioSpace collection<\\/span>\\s*<\\/div>/g, "")
+    .replace(/<span className="ss-step-number">\\{step\\.number\\}<\\/span>/g, "");
+  writeFileSync(homepagePath, homepage);
+}
+
+console.log("StudioSpace website copy cleanup and decorative numbering removal applied.");
