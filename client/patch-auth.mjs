@@ -2012,7 +2012,7 @@ console.log("StudioSpace unified light/dark theme tokens and component contrast 
 // Always present the Google account chooser instead of silently reusing an active Google session.
 replaceOnce("src/lib/auth.ts",
   'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET }',
-  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, prompt: "select_account" }',
+  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, prompt: "select_account", requireEmailVerification: true }',
   "always show Google account chooser");
 
  
@@ -2023,7 +2023,7 @@ replaceOnce("src/lib/auth.ts",
   "server-controlled admin email allowlist");
 replaceOnce("src/lib/auth.ts",
   'name: user.name,',
-  'name: user.name,\n          role: adminEmails.has(user.email.toLowerCase()) ? "admin" : "user",',
+  'name: user.name,\n          role: adminEmails.has(user.email.toLowerCase()) && user.emailVerified === true ? "admin" : "user",',
   "sign server-assigned authorization role");
 
 
