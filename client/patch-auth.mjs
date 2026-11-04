@@ -2043,7 +2043,7 @@ replaceOnce("src/lib/auth.ts",
   'const adminEmails = new Set((process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean));\nconst adminLoginPassword = process.env.ADMIN_LOGIN_PASSWORD || "";',
   "server-only admin login password");
 replaceOnce("src/lib/auth.ts",
-  'role: adminEmails.has(user.email.toLowerCase()) ? "admin" : "user",',
+  'role: adminEmails.has(user.email.toLowerCase()) && user.emailVerified === true ? "admin" : "user",',
   'role: adminEmails.has(user.email.toLowerCase()) && user.adminPasswordVerified === true ? "admin" : "user",',
   "require admin password authentication for role claim");
 replaceOnce("src/lib/auth.ts",
