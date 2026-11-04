@@ -1040,12 +1040,7 @@ console.log("StudioSpace Google sign-in controls and full dark-theme contrast pa
  
 // StudioSpace interaction polish: reliable Home action, explicit details CTA,
 // richer card motion, and consistent page-level motion beyond the homepage.
-replaceOnce(
-  "src/components/navbar.tsx",
-  '<Link className={active("/")} href="/" onClick={closeMenus}>Home</Link>',
-  '<Link className={active("/")} href="/" onClick={(event) => { closeMenus(); if (pathname === "/") { event.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); } }}>Home</Link>',
-  "Make Home navigation return to the top when already on the homepage"
-);
+
 replaceOnce(
   "src/components/scroll-motion.tsx",
   '      ".ss-principles > *"',
@@ -1058,12 +1053,7 @@ writeFileSync(
   readFileSync("src/app/brand-refresh.css", "utf8") + "\n" + "\n/* A more distinctive studio card: readable hierarchy, explicit CTA and refined motion. */\n.studio-grid { align-items: stretch; perspective: 1200px; }\n.studio-card {\n  position: relative; display: flex; min-width: 0; flex-direction: column; overflow: hidden;\n  border: 1px solid rgba(34,43,35,.1); border-radius: 20px; background: var(--ss-white);\n  box-shadow: 0 9px 28px rgba(28,31,27,.055); isolation: isolate; transform: translateZ(0);\n  transition: transform .42s cubic-bezier(.2,.72,.2,1), box-shadow .42s cubic-bezier(.2,.72,.2,1), border-color .32s ease;\n}\n.studio-card::after { position: absolute; z-index: 3; inset: 0; border: 1px solid transparent; border-radius: inherit; content: \"\"; pointer-events: none; transition: border-color .35s ease; }\n.studio-image-wrap { flex: 0 0 auto; aspect-ratio: 1.48; background: #ddd9cf; }\n.studio-image-wrap > a, .studio-image-wrap .studio-image-link { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }\n.studio-image-wrap > a::after { position: absolute; inset: 48% 0 0; background: linear-gradient(180deg,transparent,rgba(18,23,19,.24)); content: \"\"; pointer-events: none; }\n.studio-image-wrap img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .75s cubic-bezier(.2,.72,.2,1),filter .45s ease; }\n.studio-card-body { display: flex; min-height: 222px; flex: 1 1 auto; flex-direction: column; padding: 19px 19px 18px; }\n.studio-card-topline { display: flex; min-height: 22px; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }\n.studio-card-category { color: var(--ss-accent-dark); font-size: .67rem; font-weight: 850; letter-spacing: .1em; line-height: 1.3; text-transform: uppercase; }\n.studio-card-rating { display: inline-flex; align-items: center; gap: 4px; color: #a66c2f; font-size: .76rem; font-weight: 800; white-space: nowrap; }\n.studio-card-title { display: block; width: fit-content; max-width: 100%; color: var(--ss-ink); text-decoration: none; }\n.studio-card-title h3 { margin: 0; color: inherit; font-size: clamp(1.02rem,1.2vw,1.22rem); font-weight: 800; letter-spacing: -.04em; line-height: 1.28; transition: color .25s ease; }\n.studio-card-location { display: flex; align-items: flex-start; gap: 7px; margin: 9px 0 17px; color: var(--ss-muted); font-size: .78rem; line-height: 1.5; }\n.studio-card-location svg { flex: 0 0 15px; margin-top: 2px; color: var(--ss-accent); }\n.studio-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--ss-line); }\n.studio-card-price { display: inline-flex; align-items: baseline; gap: 5px; color: var(--ss-muted); font-size: .72rem; white-space: nowrap; }\n.studio-card-price strong { color: var(--ss-ink); font-family: \"Manrope\",sans-serif; font-size: 1.28rem; font-weight: 850; letter-spacing: -.055em; }\n.studio-view-details {\n  position: relative; display: inline-flex; min-height: 43px; flex: 0 0 auto; align-items: center; justify-content: center; gap: 10px;\n  overflow: hidden; padding: 0 14px; border: 1px solid #d85f49; border-radius: 11px;\n  background: linear-gradient(110deg,#df684c 0%,#d65358 100%); color: #fff !important;\n  box-shadow: 0 5px 15px rgba(202,83,66,.2); font-size: .76rem; font-weight: 850; letter-spacing: .01em; text-decoration: none;\n  transition: transform .28s cubic-bezier(.2,.72,.2,1),box-shadow .28s ease,filter .28s ease;\n}\n.studio-view-details::before { position: absolute; top: -20%; bottom: -20%; left: -65%; width: 42%; background: linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent); content: \"\"; transform: skewX(-22deg); }\n.studio-view-details span, .studio-view-details svg { position: relative; z-index: 1; }\n.studio-view-details svg { transition: transform .28s cubic-bezier(.2,.72,.2,1); }\n.studio-view-details:hover { transform: translateY(-2px); filter: saturate(1.08); box-shadow: 0 9px 22px rgba(202,83,66,.3); }\n.studio-view-details:hover::before { animation: ss-cta-shine .75s ease both; }\n.studio-view-details:hover svg { transform: translate3d(3px,-2px,0); }\n@keyframes ss-cta-shine { to { left: 135%; } }\n@media (hover:hover) and (pointer:fine) {\n  .studio-card:hover { z-index: 2; transform: perspective(1200px) translate3d(0,-8px,0) rotateX(.45deg); border-color: rgba(223,90,67,.38); box-shadow: 0 22px 48px rgba(35,39,33,.14),0 5px 18px rgba(223,90,67,.08); }\n  .studio-card:hover::after { border-color: rgba(223,90,67,.25); }\n  .studio-card:hover .studio-image-wrap img { transform: scale(1.075); filter: saturate(1.06); }\n  .studio-card:hover .studio-card-title h3 { color: var(--ss-accent-dark); }\n}\n.studio-card:focus-within { border-color: rgba(223,90,67,.55); box-shadow: 0 0 0 3px rgba(223,90,67,.1),0 14px 34px rgba(28,31,27,.1); }\n.save-button { z-index: 4; width: 42px; height: 42px; box-shadow: 0 5px 16px rgba(18,23,19,.16); transition: transform .25s ease,background .25s ease,color .25s ease; }\n.save-button:hover { transform: scale(1.08); background: #fff; }\n.save-button.saved { background: #fff1ec; color: #d65345; }\n.dark .studio-card { border-color: #3b4a40; background: #202a24; box-shadow: 0 10px 30px rgba(0,0,0,.2); }\n.dark .studio-card:hover { border-color: rgba(240,148,125,.58); box-shadow: 0 22px 48px rgba(0,0,0,.36),0 5px 18px rgba(240,148,125,.08); }\n.dark .studio-card-title, .dark .studio-card-title h3, .dark .studio-card-price strong { color: #f4f1e9; }\n.dark .studio-card-location { color: #b7c1b8; }\n.dark .studio-card-footer { border-top-color: #3e4b42; }\n.dark .studio-view-details { border-color: #e77a67; background: linear-gradient(110deg,#db7059 0%,#c95861 100%); color: #fff !important; }\n.ss-category-card { overflow: hidden; border-radius: 17px; box-shadow: 0 5px 16px rgba(28,31,27,.025); }\n.ss-category-icon { transition: transform .38s cubic-bezier(.2,.72,.2,1),background .3s ease,color .3s ease; }\n.ss-category-card:hover .ss-category-icon { transform: translate3d(0,-3px,0) rotate(-5deg); background: var(--ss-accent); color: #fff; }\n.ss-step { border-radius: 14px; }\n.ss-step:hover { border-color: rgba(240,148,125,.5); }\n.page-hero::before {\n  position: absolute; top: -38%; right: -9%; width: clamp(260px,42vw,560px); aspect-ratio: 1;\n  border: 1px solid rgba(223,90,67,.12); border-radius: 50%;\n  background: repeating-radial-gradient(circle,transparent 0 26px,rgba(223,90,67,.055) 27px 28px,transparent 29px 54px);\n  content: \"\"; pointer-events: none; animation: ss-page-orbit 30s ease-in-out infinite alternate;\n}\n@keyframes ss-page-orbit { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(-24px,18px,0) rotate(8deg); } }\n.ss-about-visual img { animation: ss-about-drift 22s ease-in-out infinite alternate; }\n@keyframes ss-about-drift { from { transform: scale(1.015) translate3d(-.3%,0,0); } to { transform: scale(1.065) translate3d(.3%,-.4%,0); } }\n.btn:active, .studio-view-details:active { transform: translateY(0) scale(.98); }\n@media (max-width:720px) {\n  .studio-card-body { min-height: 210px; padding: 14px; }\n  .studio-card-footer { align-items: stretch; flex-direction: column; gap: 10px; }\n  .studio-view-details { width: 100%; min-height: 42px; }\n  .studio-card:hover { transform: none; }\n  .studio-image-wrap { aspect-ratio: 1.35; }\n  .ss-category-card { min-height: 154px; }\n  .page-hero::before { right: -28%; opacity: .65; }\n  .ss-about-visual img { animation-duration: 28s; }\n}\n@media (max-width:420px) {\n  .studio-card-body { min-height: 0; padding: 13px; }\n  .studio-card-footer { gap: 9px; }\n  .studio-card-price strong { font-size: 1.2rem; }\n  .studio-card-location { min-height: 34px; }\n}\n@media (prefers-reduced-motion:reduce) {\n  .studio-card,.studio-card::after,.studio-image-wrap img,.studio-view-details,.studio-view-details::before,\n  .studio-view-details svg,.save-button,.ss-category-card,.ss-category-icon,.ss-step,.ss-about-visual img,.page-hero::before,.btn {\n    animation: none !important; transition: none !important;\n  }\n  .studio-card:hover,.studio-view-details:hover { transform: none !important; }\n}\n"
 );
 
-replaceOnce(
-  "src/components/navbar.tsx",
-  '<Link className={active("/") } href="/" onClick={closeMenus}>Home</Link>'.replace('active("/") ', 'active("/")'),
-  '<Link className={active("/")} href="/" onClick={(event) => { closeMenus(); if (pathname === "/") { event.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); } }}>Home</Link>',
-  "Apply Home action after final navbar generation"
-);
+
 writeFileSync(
   "src/app/brand-refresh.css",
   readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
@@ -1118,41 +1108,7 @@ body::after {
 );
 
 
-replaceOnce(
-  "src/components/footer.tsx",
-  '<span><Link href="/terms">Terms of Use</Link> · Made for the makers.</span>',
-  '<span><Link href="/terms">Terms of Use</Link> · <a className="footer-home-link" href="/" aria-label="Go to StudioSpace home" onClick={(event) => { if (window.location.pathname === "/" && !window.location.hash) { event.preventDefault(); window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); } }}>Home</a> · Made for the makers.</span>',
-  "Add a reliable Home link to the bottom footer line"
-);
-replaceOnce(
-  "src/components/footer.tsx",
-  '<Link href="/" className="brand footer-brand">',
-  '<Link href="/" className="brand footer-brand" onClick={(event) => { if (window.location.pathname === "/" && !window.location.hash) { event.preventDefault(); window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); } }}>',
-  "Make the footer brand return to the top when already on Home"
-);
-
-
-writeFileSync(
-  "src/app/brand-refresh.css",
-  readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
-.site-footer .footer-home-link {
-  display: inline-flex; min-height: 28px; align-items: center; justify-content: center;
-  margin-inline: 4px; padding: 4px 11px; border: 1px solid rgba(223,90,67,.42);
-  border-radius: 999px; color: var(--ss-accent-dark) !important;
-  font-size: .78rem; font-weight: 850; line-height: 1.2; text-decoration: none;
-  transition: background .2s ease, transform .2s ease, border-color .2s ease;
-}
-.site-footer .footer-home-link:hover {
-  transform: translateY(-1px); border-color: rgba(223,90,67,.72);
-  background: rgba(223,90,67,.1); color: var(--ss-accent-dark) !important;
-}
-.dark .site-footer .footer-home-link {
-  border-color: rgba(255,164,142,.42); color: #ffa48e !important;
-}
-.dark .site-footer .footer-home-link:hover { background: rgba(255,164,142,.12); }
-`
-);
-
+// Keep the footer legal line clean; no extra animated Home chip.
 // Place the Google OAuth action after the email forms on both account pages.
 replaceOnce("src/app/login/login-client.tsx", "<p className=\"auth-v2-intro\">Sign in to pick up where your creative work left off.</p>\n\n            <button className=\"auth-v2-google\" type=\"button\" onClick={() => void continueWithGoogle()} disabled={busy}>\n              <svg className=\"auth-v2-google-mark\" viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\">\n  <path fill=\"#4285F4\" d=\"M43.6 24.5c0-1.4-.1-2.7-.4-4H24v7.6h11a9.4 9.4 0 0 1-4.1 6.2v5h6.6c3.9-3.6 6.1-8.9 6.1-14.8z\"/>\n  <path fill=\"#34A853\" d=\"M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5c-1.8 1.2-4.1 2-6.9 2-5.3 0-9.8-3.6-11.4-8.4H5.8v5.2C9.1 39.5 16 44 24 44z\"/>\n  <path fill=\"#FBBC05\" d=\"M12.6 27.8a12 12 0 0 1 0-7.6V15H5.8a20 20 0 0 0 0 18z\"/>\n  <path fill=\"#EA4335\" d=\"M24 12c3 0 5.6 1 7.7 3.1l5.8-5.8C34 5.9 29.5 4 24 4 16 4 9.1 8.5 5.8 15l6.8 5.2C14.2 15.6 18.7 12 24 12z\"/>\n</svg>\n              <span>{busy ? \"Connecting to Google...\" : \"Continue with Google\"}</span>\n            </button>\n            <div className=\"auth-v2-divider\" aria-hidden=\"true\"><span>OR CONTINUE WITH EMAIL</span></div>", "<p className=\"auth-v2-intro auth-v2-intro-form-first\">Sign in to pick up where your creative work left off.</p>", "Move Google sign-in below the login form");
 replaceOnce("src/app/login/login-client.tsx", "<p className=\"auth-v2-bottom\">New to StudioSpace?", "<div className=\"auth-v2-divider\" aria-hidden=\"true\"><span>OR CONTINUE WITH GOOGLE</span></div>\n<button className=\"auth-v2-google\" type=\"button\" onClick={() => void continueWithGoogle()} disabled={busy}>\n  <svg className=\"auth-v2-google-mark\" viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\">\n  <path fill=\"#4285F4\" d=\"M43.6 24.5c0-1.4-.1-2.7-.4-4H24v7.6h11a9.4 9.4 0 0 1-4.1 6.2v5h6.6c3.9-3.6 6.1-8.9 6.1-14.8z\"/>\n  <path fill=\"#34A853\" d=\"M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5c-1.8 1.2-4.1 2-6.9 2-5.3 0-9.8-3.6-11.4-8.4H5.8v5.2C9.1 39.5 16 44 24 44z\"/>\n  <path fill=\"#FBBC05\" d=\"M12.6 27.8a12 12 0 0 1 0-7.6V15H5.8a20 20 0 0 0 0 18z\"/>\n  <path fill=\"#EA4335\" d=\"M24 12c3 0 5.6 1 7.7 3.1l5.8-5.8C34 5.9 29.5 4 24 4 16 4 9.1 8.5 5.8 15l6.8 5.2C14.2 15.6 18.7 12 24 12z\"/>\n</svg>\n  <span>{busy ? \"Connecting to Google...\" : \"Continue with Google\"}</span>\n</button>\n<p className=\"auth-v2-bottom\">New to StudioSpace?", "Place Google sign-in below login form");
@@ -1176,7 +1132,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 const hoverSelector = [
-  ".site-header", ".site-header .brand", ".main-nav a", ".nav-actions a", ".nav-actions button",
+  ".site-header", ".site-header .brand", ".main-nav a:not([href='/'])", ".nav-actions a", ".nav-actions button",
   "main section", "main section h1", "main section h2", "main section h3", "main section p",
   "main section a", "main section button", "main section img", "main section article",
   ".ss-hero-panel", ".ss-hero-copy", ".ss-hero-topline", ".ss-hero-foot",
@@ -1268,6 +1224,8 @@ export function ScrollMotion() {
     const clearActive = () => {
       if (!activeTarget) return;
       activeTarget.classList.remove("ss-pointer-active", "ss-pointer-section", "ss-pointer-text", "ss-pointer-image", "ss-pointer-control", "ss-pointer-card");
+      activeTarget.style.removeProperty("--ss-tilt-x");
+      activeTarget.style.removeProperty("--ss-tilt-y");
       activeTarget = null;
     };
 
@@ -1275,7 +1233,8 @@ export function ScrollMotion() {
       if (!finePointer.matches || event.pointerType === "touch") return;
       const source = event.target;
       if (!(source instanceof Element)) return;
-      const next = source.closest<HTMLElement>(hoverSelector);
+      const card = source.closest<HTMLElement>(".studio-card");
+      const next = card ?? source.closest<HTMLElement>(hoverSelector);
       if (next === activeTarget) return;
       clearActive();
       if (!next) return;
@@ -1295,6 +1254,12 @@ export function ScrollMotion() {
         const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100));
         activeTarget.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
         activeTarget.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
+        if (activeTarget.matches(".studio-card")) {
+          const tiltX = ((x - 50) / 50) * 4.2;
+          const tiltY = ((50 - y) / 50) * 3.6;
+          activeTarget.style.setProperty("--ss-tilt-x", tiltX.toFixed(2) + "deg");
+          activeTarget.style.setProperty("--ss-tilt-y", tiltY.toFixed(2) + "deg");
+        }
       }
     };
 
@@ -1459,6 +1424,161 @@ main section a.ss-pointer-active,
   .ss-pointer-image.ss-pointer-active img { transform: none !important; }
 }
 `);
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* Studio cards get a deliberate pointer-led tilt; navigation stays still and readable. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .studio-card.ss-pointer-card.ss-pointer-active {
+    translate: none !important;
+    scale: none !important;
+    transform:
+      perspective(1080px)
+      rotateX(var(--ss-tilt-y, 0deg))
+      rotateY(var(--ss-tilt-x, 0deg))
+      translate3d(0, -9px, 0)
+      scale(1.014) !important;
+    transform-style: preserve-3d;
+    box-shadow:
+      0 28px 58px rgba(24, 31, 25, .19),
+      0 8px 22px rgba(210, 92, 69, .11) !important;
+    border-color: rgba(223, 112, 88, .52) !important;
+  }
+  .studio-card.ss-pointer-card.ss-pointer-active::after {
+    background: radial-gradient(
+      circle at var(--ss-hover-x, 50%) var(--ss-hover-y, 50%),
+      rgba(255,255,255,.16),
+      transparent 48%
+    );
+    border-color: rgba(223, 112, 88, .3);
+  }
+  .studio-card.ss-pointer-card.ss-pointer-active .studio-image-wrap img {
+    transform: scale(1.075);
+    filter: saturate(1.09) contrast(1.025);
+  }
+  .studio-card.ss-pointer-card.ss-pointer-active .studio-view-details svg {
+    transform: translate3d(3px,-2px,0);
+  }
+  .studio-card.ss-pointer-card.ss-pointer-active .studio-card-title h3 {
+    color: var(--ss-accent-dark);
+  }
+}
+
+/* Keep the site navigation visible while scrolling on every route. */
+.site-header {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 1000 !important;
+}
+body {
+  padding-top: 78px !important;
+}
+html { scroll-padding-top: 92px; }
+
+/* The previous Home chip/hover effect is intentionally removed. Home is a plain nav link. */
+.main-nav a[href="/"].ss-pointer-active {
+  translate: none !important;
+  scale: none !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Dark-mode buttons must have explicit foreground/background pairs. */
+.dark .btn-dark,
+.dark .nav-actions .btn-dark,
+.dark button.btn-dark {
+  border-color: #ef987f !important;
+  background: #ef987f !important;
+  color: #172019 !important;
+}
+.dark .btn-dark:hover,
+.dark .nav-actions .btn-dark:hover,
+.dark button.btn-dark:hover {
+  border-color: #ffb29c !important;
+  background: #ffb29c !important;
+  color: #172019 !important;
+}
+.dark .btn-ghost,
+.dark a.btn-ghost,
+.dark button.btn-ghost {
+  border-color: rgba(231, 238, 230, .3);
+  background: rgba(255,255,255,.045);
+  color: #f1f4ee !important;
+}
+.dark .btn-ghost:hover,
+.dark a.btn-ghost:hover,
+.dark button.btn-ghost:hover {
+  border-color: rgba(240, 152, 127, .72);
+  background: rgba(240, 152, 127, .12);
+  color: #fff !important;
+}
+.dark .btn-outline,
+.dark a.btn-outline,
+.dark button.btn-outline {
+  border-color: #738277 !important;
+  background: #253229 !important;
+  color: #f3f5ef !important;
+}
+.dark .btn-outline:hover,
+.dark a.btn-outline:hover,
+.dark button.btn-outline:hover {
+  border-color: #f09a82 !important;
+  background: #34463a !important;
+  color: #fff !important;
+}
+.dark .btn-light,
+.dark a.btn-light,
+.dark button.btn-light {
+  border-color: #f1eee6 !important;
+  background: #f1eee6 !important;
+  color: #1a211b !important;
+}
+.dark .btn-light:hover,
+.dark a.btn-light:hover,
+.dark button.btn-light:hover {
+  border-color: #fff !important;
+  background: #fff !important;
+  color: #141a15 !important;
+}
+.dark .studio-view-details {
+  border-color: #f19a82 !important;
+  background: linear-gradient(110deg, #e98168 0%, #cf5964 100%) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.16);
+}
+.dark .profile-trigger,
+.dark .mobile-toggle,
+.dark .icon-button,
+.dark .save-button {
+  border-color: #65766a !important;
+  background: #29372e !important;
+  color: #f5f4ed !important;
+}
+.dark .save-button.saved {
+  border-color: #f19a82 !important;
+  background: #4a2c2a !important;
+  color: #ffad98 !important;
+}
+.dark .nav-actions .nav-link,
+.dark .main-nav .nav-link {
+  color: #e0e7df !important;
+}
+.dark .nav-actions .nav-link:hover,
+.dark .main-nav .nav-link:hover,
+.dark .main-nav .nav-link.active {
+  color: #fff !important;
+}
+@media (max-width: 760px) {
+  body { padding-top: 78px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-card.ss-pointer-card.ss-pointer-active {
+    transform: none !important;
+  }
+}
+`);
+
 console.log("StudioSpace full-site cursor spotlight, hover interactions and interactive element motion applied.");
 
 console.log("StudioSpace Home navigation, highlighted View Details CTA, premium card interactions and site-wide motion pass applied.");
