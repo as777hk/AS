@@ -2644,3 +2644,45 @@ writeFileSync("src/app/two-factor/page.tsx", "\"use client\";\nimport {useEffect
 
 console.log("StudioSpace flexible MFA, Google OAuth and verified password recovery applied.");
 
+
+
+
+
+// Do not expose email OTP as an option until its actual delivery provider is configured.
+replaceOnce("src/lib/auth.ts",
+  '      if (ctx.path === "/sign-in/email-otp") {',
+  '      if (ctx.path === "/two-factor/enable" && ctx.body?.method === "otp" && (!process.env.RESEND_API_KEY || !process.env.AUTH_FROM_EMAIL)) { throw new APIError("SERVICE_UNAVAILABLE", { message: "Email verification is unavailable until the StudioSpace email sender is configured." }); }\n      if (ctx.path === "/sign-in/email-otp") {',
+  "block email MFA enrollment without a working sender");
+replaceOnce("src/app/api/security/methods/route.ts",
+  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods},{headers:{"Cache-Control":"no-store"}});',
+  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods,emailOtpAvailable:Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL)},{headers:{"Cache-Control":"no-store"}});',
+  "report whether email verification delivery is configured");
+replaceOnce("src/app/api/security/methods/route.ts",
+  'if(choice!=="totp"&&choice!=="otp"&&choice!=="both")return NextResponse.json({message:"Choose an available verification method."},{status:400});\n  const methods=choice==="both"?["totp","otp"]:[choice];',
+  'if(choice!=="totp"&&choice!=="otp"&&choice!=="both")return NextResponse.json({message:"Choose an available verification method."},{status:400});\n  if((choice==="otp"||choice==="both")&&(!process.env.RESEND_API_KEY||!process.env.AUTH_FROM_EMAIL))return NextResponse.json({message:"Email verification is not configured yet. Use the authenticator app option."},{status:503});\n  const methods=choice==="both"?["totp","otp"]:[choice];',
+  "reject email MFA preference when mail delivery is not configured");
+replaceOnce("src/app/security/setup/page.tsx",
+  'const [error,setError]=useState("");const [loaded,setLoaded]=useState(false);',
+  'const [error,setError]=useState("");const [loaded,setLoaded]=useState(false);const [emailOtpAvailable,setEmailOtpAvailable]=useState(false);',
+  "track whether email MFA is available");
+replaceOnce("src/app/security/setup/page.tsx",
+  'setActiveMethods(methods);if(methods.length)setComplete(true)',
+  'setActiveMethods(methods);setEmailOtpAvailable(v.emailOtpAvailable===true);if(methods.length)setComplete(true)',
+  "load available verification methods");
+replaceOnce("src/app/security/setup/page.tsx",
+  'try{\n  const needTotp=(choice==="totp"||choice==="both")&&!activeMethods.includes("totp");',
+  'try{\n  if((choice==="otp"||choice==="both")&&!emailOtpAvailable)throw new Error("Email verification is not configured yet. Please use an authenticator app.");\n  const needTotp=(choice==="totp"||choice==="both")&&!activeMethods.includes("totp");',
+  "prevent users selecting a non-deliverable email factor");
+replaceOnce("src/app/security/setup/page.tsx",
+  'if(choice==="both"){const otpResult=await authClient.twoFactor.enable({password:password||undefined,method:"otp"});if(otpResult.error)throw new Error(otpResult.error.message||"Authenticator is active, but email verification could not be added. Open security settings to finish adding it.");methods=["totp","otp"]}',
+  'if(choice==="both"){if(!activeMethods.includes("otp")){const otpResult=await authClient.twoFactor.enable({password:password||undefined,method:"otp"});if(otpResult.error)throw new Error(otpResult.error.message||"Authenticator is active, but email verification could not be added. Open security settings to finish adding it.")}methods=["totp","otp"]}',
+  "avoid enabling an already active email factor twice");
+replaceOnce("src/app/security/setup/page.tsx",
+  '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="radio" name="mfa-choice" checked={choice==="otp"} onChange={()=>setChoice("otp")}/><span><strong>Email verification code</strong><br/><small>Receive a one-time code in your verified email inbox.</small></span></label>',
+  '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12,opacity:emailOtpAvailable?1:.55}}><input type="radio" name="mfa-choice" checked={choice==="otp"} disabled={!emailOtpAvailable} onChange={()=>setChoice("otp")}/><span><strong>Email verification code</strong><br/><small>{emailOtpAvailable?"Receive a one-time code in your verified email inbox.":"Unavailable until the StudioSpace email sender is configured."}</small></span></label>',
+  "disable email MFA option until Resend is configured");
+replaceOnce("src/app/security/setup/page.tsx",
+  '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="radio" name="mfa-choice" checked={choice==="both"} onChange={()=>setChoice("both")}/><span><strong>Both methods</strong><br/><small>Keep both options available at sign-in and choose either verification method.</small></span></label>',
+  '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12,opacity:emailOtpAvailable?1:.55}}><input type="radio" name="mfa-choice" checked={choice==="both"} disabled={!emailOtpAvailable} onChange={()=>setChoice("both")}/><span><strong>Both methods</strong><br/><small>{emailOtpAvailable?"Keep both options available at sign-in and choose either verification method.":"Available after the StudioSpace email sender is configured."}</small></span></label>',
+  "disable combined MFA option until email delivery is configured");
+console.log("Email MFA is gated on Resend configuration; setup UI reflects availability.");
