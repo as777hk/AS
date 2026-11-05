@@ -1139,7 +1139,14 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 const hoverSelector = [
-  ".studio-card", ".ss-category-card", ".ss-step", ".about-value-card"
+  ".site-header", ".site-header .brand", ".main-nav a:not([href='/'])", ".nav-actions a", ".nav-actions button",
+  "main section", "main section h1", "main section h2", "main section h3", "main section p",
+  "main section a", "main section button", "main section img", "main section article",
+  ".ss-hero-panel", ".ss-hero-copy", ".ss-hero-topline", ".ss-hero-foot",
+  ".ss-section-head", ".ss-category-card", ".ss-step", ".studio-card",
+  ".filter-bar", ".auth-v2-panel", ".auth-v2-visual", ".detail-gallery > *",
+  ".content-copy > *", ".footer-grid > *", ".footer-grid a", ".footer-grid button",
+  ".about-value-card", ".how-page-note-inner", ".about-page-cta-inner"
 ].join(",");
 
 function hoverType(element: HTMLElement): "section" | "text" | "image" | "control" | "card" {
@@ -1158,7 +1165,7 @@ export function ScrollMotion() {
   useEffect(() => {
     previousPathRef.current = pathname;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const finePointer = window.matchMedia("(any-hover: hover) and (any-pointer: fine)");
     const reduceChange = () => {
       document.body.classList.toggle("ss-motion-reduced", reduced.matches);
     };
@@ -1232,8 +1239,16 @@ export function ScrollMotion() {
     });
     onMutations.observe(document.body, { childList: true, subtree: true });
 
-    // No full-screen cursor-following glow: it caused expensive compositing
-    // across the entire page on every pointer movement.
+    // Restore the original pointer-following aura and element feedback.
+    // Pointer updates are coalesced to one requestAnimationFrame for smooth rendering.
+    let aura = document.querySelector<HTMLDivElement>(".ss-cursor-aura");
+    if (!aura) {
+      aura = document.createElement("div");
+      aura.className = "ss-cursor-aura";
+      aura.setAttribute("aria-hidden", "true");
+      document.body.appendChild(aura);
+    }
+
     let activeTarget: HTMLElement | null = null;
     const clearActive = () => {
       if (!activeTarget) return;
@@ -1242,6 +1257,8 @@ export function ScrollMotion() {
       activeTarget.style.removeProperty("--ss-tilt-y");
       activeTarget.style.removeProperty("--ss-hover-x");
       activeTarget.style.removeProperty("--ss-hover-y");
+      currentTiltX = 0;
+      currentTiltY = 0;
       activeTarget = null;
     };
 
@@ -1256,33 +1273,45 @@ export function ScrollMotion() {
       if (!next) return;
       activeTarget = next;
       next.classList.add("ss-pointer-active", "ss-pointer-" + hoverType(next));
+      document.body.classList.add("ss-pointer-live");
     };
 
-    // Coalesce high-frequency pointer events to one visual update per frame.
-    // Only a card currently under the pointer is measured or transformed.
+    // Interpolate pointer tilt on animation frames. This avoids transform
+    // transition lag (which can make cards oscillate behind the pointer).
     let pointerFrame = 0;
     let latestPointerX = 0;
     let latestPointerY = 0;
+    let currentTiltX = 0;
+    let currentTiltY = 0;
+    const updatePointerMotion = () => {
+      pointerFrame = 0;
+      if (aura) {
+        aura.style.transform = "translate3d(" + latestPointerX + "px," + latestPointerY + "px,0)";
+      }
+      const target = activeTarget;
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const x = Math.max(0, Math.min(100, ((latestPointerX - rect.left) / Math.max(rect.width, 1)) * 100));
+      const y = Math.max(0, Math.min(100, ((latestPointerY - rect.top) / Math.max(rect.height, 1)) * 100));
+      const isStudioCard = target.matches(".studio-card");
+      const motionScale = reduced.matches ? 0.35 : 1;
+      const targetTiltX = ((x - 50) / 50) * (isStudioCard ? 4.8 : 3.8) * motionScale;
+      const targetTiltY = ((50 - y) / 50) * (isStudioCard ? 3.6 : 3.0) * motionScale;
+      currentTiltX += (targetTiltX - currentTiltX) * 0.22;
+      currentTiltY += (targetTiltY - currentTiltY) * 0.22;
+      target.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
+      target.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
+      target.style.setProperty("--ss-tilt-x", currentTiltX.toFixed(2) + "deg");
+      target.style.setProperty("--ss-tilt-y", currentTiltY.toFixed(2) + "deg");
+      if (Math.abs(targetTiltX - currentTiltX) > 0.025 || Math.abs(targetTiltY - currentTiltY) > 0.025) {
+        pointerFrame = window.requestAnimationFrame(updatePointerMotion);
+      }
+    };
     const onPointerMove = (event: PointerEvent) => {
-      if (!finePointer.matches || event.pointerType === "touch" || reduced.matches || !activeTarget) return;
+      if (!finePointer.matches || event.pointerType === "touch") return;
       latestPointerX = event.clientX;
       latestPointerY = event.clientY;
-      if (pointerFrame) return;
-      pointerFrame = window.requestAnimationFrame(() => {
-        pointerFrame = 0;
-        const target = activeTarget;
-        if (!target) return;
-        const rect = target.getBoundingClientRect();
-        const x = Math.max(0, Math.min(100, ((latestPointerX - rect.left) / Math.max(rect.width, 1)) * 100));
-        const y = Math.max(0, Math.min(100, ((latestPointerY - rect.top) / Math.max(rect.height, 1)) * 100));
-        const isStudioCard = target.matches(".studio-card");
-        const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4);
-        const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5);
-        target.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
-        target.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
-        target.style.setProperty("--ss-tilt-x", tiltX.toFixed(2) + "deg");
-        target.style.setProperty("--ss-tilt-y", tiltY.toFixed(2) + "deg");
-      });
+      if (!pointerFrame) pointerFrame = window.requestAnimationFrame(updatePointerMotion);
     };
 
     const onPointerOut = (event: PointerEvent) => {
@@ -1292,6 +1321,7 @@ export function ScrollMotion() {
       const source = event.target;
       if (source instanceof Node && activeTarget.contains(source)) {
         clearActive();
+        document.body.classList.remove("ss-pointer-live");
       }
     };
 
@@ -1477,7 +1507,7 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
       rotateX(var(--ss-tilt-y, 0deg))
       rotateY(var(--ss-tilt-x, 0deg))
       translate3d(0,-9px,0)
-      scale(1.018) !important;
+      scale(1.012) !important;
     box-shadow:
       0 28px 58px rgba(24,31,25,.19),
       0 8px 22px rgba(210,92,69,.12) !important;
@@ -2491,14 +2521,9 @@ replaceOnce("src/app/as/page.tsx",
   "clear each one-time admin login challenge after successful CAPTCHA verification");
 
 
-// Cursor performance hardening: no global glow or page-wide pointer transforms.
-writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
-.ss-cursor-aura { display: none !important; }
-@media (hover: hover) and (pointer: fine) {
-  .ss-pointer-section, .ss-pointer-text, .ss-pointer-image, .ss-pointer-control { translate: none !important; scale: none !important; filter: none !important; box-shadow: none !important; text-shadow: none !important; }
-}
-`);
-console.log("Cursor effects limited to cards and frame-synced.");
+// Keep the original cursor aura and non-card pointer feedback enabled.
+// The frame-synced controller above avoids the previous page-wide pointer jank.
+console.log("Original site pointer interactions restored with frame-synced updates.");
 
 
 
@@ -2777,3 +2802,46 @@ replaceOnce("src/app/reset-password/page.tsx",
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>',
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>{!checkingEmailOtp&&!emailOtpAvailable&&<p role="alert" style={{color:"#b42318"}}>Email verification is currently unavailable. The email sender is not configured, so a valid code cannot be checked.</p>}',
   "show reset email readiness to users");
+
+
+// Keep the explicitly requested mouse tilt available on any device with a mouse,
+// including touch-primary laptops. Reduced-motion users receive a much gentler tilt.
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+@media (any-hover: hover) and (any-pointer: fine) {
+  .studio-card.ss-pointer-card.ss-pointer-active {
+    transform:
+      perspective(1080px)
+      rotateX(var(--ss-tilt-y, 0deg))
+      rotateY(var(--ss-tilt-x, 0deg))
+      translate3d(0, -7px, 0)
+      scale(1.018) !important;
+    transform-style: preserve-3d;
+    transition: box-shadow .28s ease, border-color .28s ease !important;
+    box-shadow: 0 28px 58px rgba(24,31,25,.2), 0 8px 22px rgba(210,92,69,.12) !important;
+    border-color: rgba(223,112,88,.62) !important;
+  }
+}
+@media (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: reduce) {
+  .studio-card:hover.ss-pointer-active.ss-pointer-card {
+    transform:
+      perspective(1080px)
+      rotateX(var(--ss-tilt-y, 0deg))
+      rotateY(var(--ss-tilt-x, 0deg))
+      translate3d(0, -3px, 0)
+      scale(1.006) !important;
+    transition: none !important;
+  }
+}
+`);
+
+
+// Keep the registration screen in sync with the server-side email sender
+// readiness, instead of relying on a separate build-time NEXT_PUBLIC flag.
+replaceOnce("src/app/register/page.tsx",
+  'import { useState } from "react";',
+  'import { useEffect, useState } from "react";',
+  "load registration email verification readiness");
+replaceOnce("src/app/register/page.tsx",
+  '  const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";',
+  '  const [otpEnabled, setOtpEnabled] = useState(false);\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) setOtpEnabled(value.emailOtpAvailable === true); }).catch(() => { if (active) setOtpEnabled(false); }); return () => { active = false; }; }, []);',
+  "use live readiness for registration verification step");
