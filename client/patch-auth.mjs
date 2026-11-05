@@ -3102,3 +3102,20 @@ replaceOnce("src/app/as/page.tsx",
   '<label htmlFor="as-admin-password">ADMINISTRATOR PASSWORD</label><div className="as-portal-input-wrap"><KeyRound size={17}/><input id="as-admin-password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter secure password"/></div>',
   '<label htmlFor="as-admin-password">ADMINISTRATOR PASSWORD</label><div className="as-portal-input-wrap"><KeyRound size={17}/><input id="as-admin-password" type={showPassword?"text":"password"} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter secure password"/><button className="as-portal-password-toggle" type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div>',
   "render accessible show hide control on final admin password field");
+
+
+// Let members complete a normal sign-in without being forced into first-time MFA
+// enrollment. Existing MFA-enabled accounts still take Better Auth's challenge path.
+replaceOnce("src/app/login/login-client.tsx",
+  '  if((current.data?.user as {twoFactorEnabled?:boolean}|undefined)?.twoFactorEnabled!==true){router.replace("/security/setup?callbackUrl="+encodeURIComponent(callback));return}\n',
+  '  // First-time MFA enrollment is optional; accounts with MFA already enabled are challenged above.\n',
+  "stop forcing every member through mandatory MFA enrollment after password login");
+
+replaceOnce("src/app/oauth-complete/page.tsx",
+  'import {authClient} from "@/lib/auth-client";',
+  'import {authClient,syncAuthCookie} from "@/lib/auth-client";',
+  "prepare the secure API cookie after Google OAuth");
+replaceOnce("src/app/oauth-complete/page.tsx",
+  'router.replace("/security/setup?callbackUrl=%2F")',
+  'void syncAuthCookie().then(()=>router.replace("/")).catch(()=>router.replace("/login?error=google_session_failed"))',
+  "complete Google sign-in for accounts without enrolled MFA");
