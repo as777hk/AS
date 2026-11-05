@@ -2736,11 +2736,6 @@ writeFileSync("src/app/api/auth/readiness/route.ts", [
   '}',
 ].join("\n"));
 
-replaceOnce("src/app/api/security/methods/route.ts",
-  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods},{headers:{"Cache-Control":"no-store"}});',
-  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods,emailOtpAvailable:Boolean(process.env.RESEND_API_KEY&&process.env.AUTH_FROM_EMAIL)},{headers:{"Cache-Control":"no-store"}});',
-  "report email 2FA availability to security settings");
-
 replaceOnce("src/app/forgot-password/page.tsx",
   'import {useState} from "react";',
   'import {useEffect,useState} from "react";',
@@ -2783,15 +2778,5 @@ replaceOnce("src/app/reset-password/page.tsx",
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>{!checkingEmailOtp&&!emailOtpAvailable&&<p role="alert" style={{color:"#b42318"}}>Email verification is currently unavailable. The email sender is not configured, so a valid code cannot be checked.</p>}',
   "show reset email readiness to users");
 
-replaceOnce("src/app/login/login-client.tsx",
-  'import { useMemo, useState } from "react";',
-  'import { useEffect, useMemo, useState } from "react";',
-  "load runtime email login readiness");
-replaceOnce("src/app/login/login-client.tsx",
-  'const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";',
-  'const [otpEnabled, setOtpEnabled] = useState(false);',
-  "use runtime email sender readiness for login UI");
-replaceOnce("src/app/login/login-client.tsx",
-  'const [busy, setBusy] = useState(false);',
-  'const [busy, setBusy] = useState(false);\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject()).then(v => { if (active) setOtpEnabled(v.emailOtpAvailable === true); }).catch(() => { if (active) setOtpEnabled(false); }); return () => { active = false; }; }, []);',
+ return () => { active = false; }; }, []);',
   "keep sign-in email-code option in sync with delivery configuration");
