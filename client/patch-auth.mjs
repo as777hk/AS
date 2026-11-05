@@ -2674,15 +2674,15 @@ console.log("StudioSpace flexible MFA, Google OAuth and verified password recove
 // Do not expose email OTP as an option until its actual delivery provider is configured.
 replaceOnce("src/lib/auth.ts",
   '      if (ctx.path === "/sign-in/email-otp") {',
-  '      if (ctx.path === "/two-factor/enable" && ctx.body?.method === "otp" && (!process.env.RESEND_API_KEY || !process.env.AUTH_FROM_EMAIL)) { throw new APIError("SERVICE_UNAVAILABLE", { message: "Email verification is unavailable until the StudioSpace email sender is configured." }); }\n      if (ctx.path === "/sign-in/email-otp") {',
+  '      if (ctx.path === "/two-factor/enable" && ctx.body?.method === "otp" && (!process.env.SMTP_PASS || !process.env.AUTH_FROM_EMAIL)) { throw new APIError("SERVICE_UNAVAILABLE", { message: "Email verification is unavailable until the StudioSpace email sender is configured." }); }\n      if (ctx.path === "/sign-in/email-otp") {',
   "block email MFA enrollment without a working sender");
 replaceOnce("src/app/api/security/methods/route.ts",
   'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods},{headers:{"Cache-Control":"no-store"}});',
-  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods,emailOtpAvailable:Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL)},{headers:{"Cache-Control":"no-store"}});',
+  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods,emailOtpAvailable:Boolean(process.env.SMTP_PASS && process.env.AUTH_FROM_EMAIL)},{headers:{"Cache-Control":"no-store"}});',
   "report whether email verification delivery is configured");
 replaceOnce("src/app/api/security/methods/route.ts",
   'if(choice!=="totp"&&choice!=="otp"&&choice!=="both")return NextResponse.json({message:"Choose an available verification method."},{status:400});\n  const methods=choice==="both"?["totp","otp"]:[choice];',
-  'if(choice!=="totp"&&choice!=="otp"&&choice!=="both")return NextResponse.json({message:"Choose an available verification method."},{status:400});\n  if((choice==="otp"||choice==="both")&&(!process.env.RESEND_API_KEY||!process.env.AUTH_FROM_EMAIL))return NextResponse.json({message:"Email verification is not configured yet. Use the authenticator app option."},{status:503});\n  const methods=choice==="both"?["totp","otp"]:[choice];',
+  'if(choice!=="totp"&&choice!=="otp"&&choice!=="both")return NextResponse.json({message:"Choose an available verification method."},{status:400});\n  if((choice==="otp"||choice==="both")&&(!process.env.SMTP_PASS||!process.env.AUTH_FROM_EMAIL))return NextResponse.json({message:"Email verification is not configured yet. Use the authenticator app option."},{status:503});\n  const methods=choice==="both"?["totp","otp"]:[choice];',
   "reject email MFA preference when mail delivery is not configured");
 replaceOnce("src/app/security/setup/page.tsx",
   'const [error,setError]=useState("");const [loaded,setLoaded]=useState(false);',
@@ -2703,12 +2703,12 @@ replaceOnce("src/app/security/setup/page.tsx",
 replaceOnce("src/app/security/setup/page.tsx",
   '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="radio" name="mfa-choice" checked={choice==="otp"} onChange={()=>setChoice("otp")}/><span><strong>Email verification code</strong><br/><small>Receive a one-time code in your verified email inbox.</small></span></label>',
   '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12,opacity:emailOtpAvailable?1:.55}}><input type="radio" name="mfa-choice" checked={choice==="otp"} disabled={!emailOtpAvailable} onChange={()=>setChoice("otp")}/><span><strong>Email verification code</strong><br/><small>{emailOtpAvailable?"Receive a one-time code in your verified email inbox.":"Unavailable until the StudioSpace email sender is configured."}</small></span></label>',
-  "disable email MFA option until Resend is configured");
+  "disable email MFA option until SMTP is configured");
 replaceOnce("src/app/security/setup/page.tsx",
   '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12}}><input type="radio" name="mfa-choice" checked={choice==="both"} onChange={()=>setChoice("both")}/><span><strong>Both methods</strong><br/><small>Keep both options available at sign-in and choose either verification method.</small></span></label>',
   '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12,opacity:emailOtpAvailable?1:.55}}><input type="radio" name="mfa-choice" checked={choice==="both"} disabled={!emailOtpAvailable} onChange={()=>setChoice("both")}/><span><strong>Both methods</strong><br/><small>{emailOtpAvailable?"Keep both options available at sign-in and choose either verification method.":"Available after the StudioSpace email sender is configured."}</small></span></label>',
   "disable combined MFA option until email delivery is configured");
-console.log("Email MFA is gated on Resend configuration; setup UI reflects availability.");
+console.log("Email MFA is gated on SMTP configuration; setup UI reflects availability.");
 
 
 
@@ -2755,7 +2755,7 @@ writeFileSync("src/app/api/auth/readiness/route.ts", [
   'import { NextResponse } from "next/server";',
   'export const runtime = "nodejs";',
   'export async function GET() {',
-  '  const emailOtpAvailable = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
+  '  const emailOtpAvailable = Boolean(process.env.SMTP_PASS && process.env.AUTH_FROM_EMAIL);',
   '  const googleAvailable = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);',
   '  return NextResponse.json({ emailOtpAvailable, googleAvailable }, { headers: { "Cache-Control": "no-store" } });',
   '}',
@@ -2850,8 +2850,8 @@ replaceOnce("src/app/register/page.tsx",
 
 replaceOnce("src/lib/auth.ts",
   'export const auth = betterAuth({',
-  'async function sendStudioSpaceVerificationLink({ email, url }: { email: string; url: string }) {\n  const apiKey = process.env.RESEND_API_KEY;\n  const from = process.env.AUTH_FROM_EMAIL;\n  if (!apiKey || !from) throw new Error("Email verification is not configured. Set RESEND_API_KEY and AUTH_FROM_EMAIL in Vercel.");\n  const safeUrl = url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");\n  const html = [\n    \'<div style="margin:0;padding:36px 16px;background:#f4f1eb;font-family:Arial,sans-serif;color:#191d1a">\',\n    \'<div style="max-width:520px;margin:0 auto;padding:34px;background:#fffefa;border:1px solid #e2ded5;border-radius:18px">\',\n    \'<p style="margin:0 0 22px;color:#c15142;font-size:12px;font-weight:700;letter-spacing:2px">STUDIOSPACE ACCOUNT SECURITY</p>\',\n    \'<h1 style="margin:0 0 12px;font-size:26px;line-height:1.2">Verify your email address</h1>\',\n    \'<p style="margin:0;color:#686d66;font-size:15px;line-height:1.7">Confirm that this email address belongs to you to finish creating your StudioSpace account.</p>\',\n    \'<p style="margin:28px 0"><a href="\' + safeUrl + \'" style="display:inline-block;padding:14px 22px;border-radius:10px;background:#c15142;color:#fffefa;text-decoration:none;font-weight:700">Verify email address</a></p>\',\n    \'<p style="margin:0;color:#777a72;font-size:13px;line-height:1.6">This secure link expires in one hour. If you did not create a StudioSpace account, you can ignore this email.</p>\',\n    \'<p style="margin:28px 0 0;color:#777a72;font-size:12px">StudioSpace, Creative spaces shared.</p>\',\n    \'</div></div>\'\n  ].join("");\n  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [email], subject: "Verify your email address | StudioSpace", html, text: "Verify your StudioSpace email address by opening this secure link: " + url + "\\n\\nThe link expires in one hour. If you did not create an account, ignore this email." }), cache: "no-store" });\n  if (!response.ok) { const detail = await response.text().catch(() => ""); console.error("StudioSpace verification email failed:", response.status, detail.slice(0, 240)); throw new Error("We could not send the verification email. Please try again shortly."); }\n}\n\nexport const auth = betterAuth({',
-  "add Resend sender for Better Auth native verification links");
+  'async function sendStudioSpaceVerificationLink({ email, url }: { email: string; url: string }) {\n  const apiKey = process.env.SMTP_PASS;\n  const from = process.env.AUTH_FROM_EMAIL;\n  if (!apiKey || !from) throw new Error("Email verification is not configured. Set SMTP_PASS and AUTH_FROM_EMAIL in Vercel.");\n  const safeUrl = url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");\n  const html = [\n    \'<div style="margin:0;padding:36px 16px;background:#f4f1eb;font-family:Arial,sans-serif;color:#191d1a">\',\n    \'<div style="max-width:520px;margin:0 auto;padding:34px;background:#fffefa;border:1px solid #e2ded5;border-radius:18px">\',\n    \'<p style="margin:0 0 22px;color:#c15142;font-size:12px;font-weight:700;letter-spacing:2px">STUDIOSPACE ACCOUNT SECURITY</p>\',\n    \'<h1 style="margin:0 0 12px;font-size:26px;line-height:1.2">Verify your email address</h1>\',\n    \'<p style="margin:0;color:#686d66;font-size:15px;line-height:1.7">Confirm that this email address belongs to you to finish creating your StudioSpace account.</p>\',\n    \'<p style="margin:28px 0"><a href="\' + safeUrl + \'" style="display:inline-block;padding:14px 22px;border-radius:10px;background:#c15142;color:#fffefa;text-decoration:none;font-weight:700">Verify email address</a></p>\',\n    \'<p style="margin:0;color:#777a72;font-size:13px;line-height:1.6">This secure link expires in one hour. If you did not create a StudioSpace account, you can ignore this email.</p>\',\n    \'<p style="margin:28px 0 0;color:#777a72;font-size:12px">StudioSpace, Creative spaces shared.</p>\',\n    \'</div></div>\'\n  ].join("");\n  const response = await fetch("https://SMTP transport/emails", { method: "POST", headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [email], subject: "Verify your email address | StudioSpace", html, text: "Verify your StudioSpace email address by opening this secure link: " + url + "\\n\\nThe link expires in one hour. If you did not create an account, ignore this email." }), cache: "no-store" });\n  if (!response.ok) { const detail = await response.text().catch(() => ""); console.error("StudioSpace verification email failed:", response.status, detail.slice(0, 240)); throw new Error("We could not send the verification email. Please try again shortly."); }\n}\n\nexport const auth = betterAuth({',
+  "add SMTP sender for Better Auth native verification links");
 replaceOnce("src/lib/auth.ts",
   'requireEmailVerification: emailOtpEnabled,\n    revokeSessionsOnPasswordReset: true',
   'requireEmailVerification: true,\n    revokeSessionsOnPasswordReset: true',
@@ -2876,8 +2876,8 @@ replaceOnce("src/app/login/login-client.tsx",
 
 // Keep the readiness endpoint backward-compatible for the separate OTP/MFA options.
 replaceOnce("src/app/api/auth/readiness/route.ts",
-  '  const emailOtpAvailable = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
-  '  const emailOtpAvailable = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);\n  const emailVerificationAvailable = emailOtpAvailable;',
+  '  const emailOtpAvailable = Boolean(process.env.SMTP_PASS && process.env.AUTH_FROM_EMAIL);',
+  '  const emailOtpAvailable = Boolean(process.env.SMTP_PASS && process.env.AUTH_FROM_EMAIL);\n  const emailVerificationAvailable = emailOtpAvailable;',
   "expose native email verification sender readiness");
 replaceOnce("src/app/api/auth/readiness/route.ts",
   'return NextResponse.json({ emailOtpAvailable, googleAvailable }',
@@ -2887,11 +2887,11 @@ replaceOnce("src/app/api/auth/readiness/route.ts",
 
 
 // Keep current account creation operational until the production sender is verified.
-// Once RESEND_API_KEY and AUTH_FROM_EMAIL are both configured, Better Auth enforces
+// Once SMTP_PASS and AUTH_FROM_EMAIL are both configured, Better Auth enforces
 // native token-link verification automatically.
 replaceOnce("src/lib/auth.ts",
-  'const emailOtpEnabled = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
-  'const emailVerificationEnabled = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
+  'const emailOtpEnabled = Boolean(process.env.SMTP_PASS && process.env.AUTH_FROM_EMAIL);',
+  'const emailVerificationEnabled = Boolean(process.env.SMTP_PASS && process.env.AUTH_FROM_EMAIL);',
   "name the native link verification availability flag");
 replaceOnce("src/lib/auth.ts",
   'requireEmailVerification: true,',
