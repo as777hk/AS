@@ -1158,7 +1158,7 @@ export function ScrollMotion() {
   useEffect(() => {
     previousPathRef.current = pathname;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const finePointer = window.matchMedia("(any-hover: hover) and (any-pointer: fine)");
     const reduceChange = () => {
       document.body.classList.toggle("ss-motion-reduced", reduced.matches);
     };
@@ -1264,7 +1264,7 @@ export function ScrollMotion() {
     let latestPointerX = 0;
     let latestPointerY = 0;
     const onPointerMove = (event: PointerEvent) => {
-      if (!finePointer.matches || event.pointerType === "touch" || reduced.matches || !activeTarget) return;
+      if (!finePointer.matches || event.pointerType === "touch" || !activeTarget) return;
       latestPointerX = event.clientX;
       latestPointerY = event.clientY;
       if (pointerFrame) return;
@@ -1276,8 +1276,8 @@ export function ScrollMotion() {
         const x = Math.max(0, Math.min(100, ((latestPointerX - rect.left) / Math.max(rect.width, 1)) * 100));
         const y = Math.max(0, Math.min(100, ((latestPointerY - rect.top) / Math.max(rect.height, 1)) * 100));
         const isStudioCard = target.matches(".studio-card");
-        const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4);
-        const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5);
+        const motionScale = reduced.matches ? 0.35 : 1;\n        const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4) * motionScale;
+        const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5) * motionScale;
         target.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
         target.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
         target.style.setProperty("--ss-tilt-x", tiltX.toFixed(2) + "deg");
@@ -2777,3 +2777,34 @@ replaceOnce("src/app/reset-password/page.tsx",
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>',
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>{!checkingEmailOtp&&!emailOtpAvailable&&<p role="alert" style={{color:"#b42318"}}>Email verification is currently unavailable. The email sender is not configured, so a valid code cannot be checked.</p>}',
   "show reset email readiness to users");
+
+
+// Keep the explicitly requested mouse tilt available on any device with a mouse,
+// including touch-primary laptops. Reduced-motion users receive a much gentler tilt.
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw\`
+@media (any-hover: hover) and (any-pointer: fine) {
+  .studio-card.ss-pointer-card.ss-pointer-active {
+    transform:
+      perspective(1080px)
+      rotateX(var(--ss-tilt-y, 0deg))
+      rotateY(var(--ss-tilt-x, 0deg))
+      translate3d(0, -10px, 0)
+      scale(1.018) !important;
+    transform-style: preserve-3d;
+    transition: transform .22s ease, box-shadow .28s ease, border-color .28s ease !important;
+    box-shadow: 0 28px 58px rgba(24,31,25,.2), 0 8px 22px rgba(210,92,69,.12) !important;
+    border-color: rgba(223,112,88,.62) !important;
+  }
+}
+@media (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: reduce) {
+  .studio-card:hover.ss-pointer-active.ss-pointer-card {
+    transform:
+      perspective(1080px)
+      rotateX(var(--ss-tilt-y, 0deg))
+      rotateY(var(--ss-tilt-x, 0deg))
+      translate3d(0, -3px, 0)
+      scale(1.006) !important;
+    transition: none !important;
+  }
+}
+\`);
