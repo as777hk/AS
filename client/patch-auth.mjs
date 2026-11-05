@@ -2684,3 +2684,14 @@ replaceOnce("src/app/security/setup/page.tsx",
   '<label style={{display:"flex",gap:12,alignItems:"flex-start",padding:14,border:"1px solid var(--line)",borderRadius:12,opacity:emailOtpAvailable?1:.55}}><input type="radio" name="mfa-choice" checked={choice==="both"} disabled={!emailOtpAvailable} onChange={()=>setChoice("both")}/><span><strong>Both methods</strong><br/><small>{emailOtpAvailable?"Keep both options available at sign-in and choose either verification method.":"Available after the StudioSpace email sender is configured."}</small></span></label>',
   "disable combined MFA option until email delivery is configured");
 console.log("Email MFA is gated on Resend configuration; setup UI reflects availability.");
+
+
+
+
+// Mark allowlisted admin identity as password-verified before MFA challenge creation.
+// The two-factor plugin intentionally clears newSession during a pending challenge.
+replaceOnce("src/lib/auth.ts",
+  '        if (credentialAccount) {\n          await ctx.context.internalAdapter.updatePassword(user.id, passwordHash);\n        } else {\n          await ctx.context.internalAdapter.createAccount({\n            userId: user.id,\n            accountId: user.id,\n            providerId: "credential",\n            password: passwordHash\n          });\n        }\n      }\n    }),',
+  '        if (credentialAccount) {\n          await ctx.context.internalAdapter.updatePassword(user.id, passwordHash);\n        } else {\n          await ctx.context.internalAdapter.createAccount({\n            userId: user.id,\n            accountId: user.id,\n            providerId: "credential",\n            password: passwordHash\n          });\n        }\n        await ctx.context.internalAdapter.updateUser(user.id, { adminPasswordVerified: true });\n      }\n    }),',
+  "preserve admin identity across two-factor challenge");
+console.log("Admin password verification marker now persists before MFA challenge.");
