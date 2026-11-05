@@ -2930,3 +2930,133 @@ replaceOnce("src/app/register/page.tsx",
   '<div className="auth-v2-note"><ShieldCheck size={16} /> {verificationAvailable ? "We will email you a secure verification link. No verification code is required." : "Email link verification will activate when the StudioSpace sender address is configured."}</div>',
   "show accurate native verification readiness on signup");
 
+
+
+// Client-requested light theme correction, smoother global motion and logo intro.
+writeFileSync("src/components/studio-intro.tsx", String.raw`"use client";
+
+import { useEffect, useState } from "react";
+
+export function StudioIntro() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem("studiospace-intro-seen") === "1") return;
+      window.sessionStorage.setItem("studiospace-intro-seen", "1");
+    } catch {
+      // If storage is unavailable, still show a short, non-blocking intro.
+    }
+    setVisible(true);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => setVisible(false), reduced ? 450 : 1650);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!visible) return null;
+  return (
+    <div className="ss-intro" role="status" aria-label="StudioSpace is loading">
+      <div className="ss-intro-orbit" aria-hidden="true">
+        <span className="ss-intro-orbit-ring" />
+        <img src="/studiospace-mark.svg" alt="" />
+      </div>
+      <img className="ss-intro-wordmark" src="/studiospace-logo.svg" alt="StudioSpace" />
+      <span className="ss-intro-tagline">CREATIVE SPACES, SHARED</span>
+      <span className="ss-intro-progress" aria-hidden="true"><i /></span>
+    </div>
+  );
+}
+`);
+
+replaceOnce("src/app/layout.tsx",
+  'import { Providers } from "@/components/providers";',
+  'import { Providers } from "@/components/providers";\nimport { StudioIntro } from "@/components/studio-intro";',
+  "add StudioSpace animated intro component");
+replaceOnce("src/app/layout.tsx",
+  '<body><Providers>{children}</Providers></body>',
+  '<body><StudioIntro/><Providers>{children}</Providers></body>',
+  "show StudioSpace logo intro on first visit");
+
+const smoothIntroCss = String.raw`
+/* How It Works: explicit, high-contrast light palette; dark palette stays intentional. */
+html:not(.dark) .how-page-hero {
+  color: #202720 !important;
+  background: linear-gradient(118deg,#f7f1e9 0%,#f4e9e1 48%,#e9f0e8 100%) !important;
+}
+html:not(.dark) .how-page-hero h1,
+html:not(.dark) .how-page-steps .ss-section-head h2,
+html:not(.dark) .how-page-note h2 { color: #202720 !important; }
+html:not(.dark) .how-page-hero p,
+html:not(.dark) .how-page-steps .ss-section-head p,
+html:not(.dark) .how-page-note p { color: #59645b !important; }
+html:not(.dark) .how-page-steps { color: #202720; }
+html:not(.dark) .how-page-steps .ss-step {
+  color: #202720 !important;
+  background: linear-gradient(145deg,#fffefa 0%,#fff4ed 58%,#eef4ed 100%) !important;
+  border: 1px solid #deded5 !important;
+  box-shadow: 0 12px 30px rgba(28,38,29,.07) !important;
+}
+html:not(.dark) .how-page-steps .ss-step h3 { color: #202720 !important; }
+html:not(.dark) .how-page-steps .ss-step p { color: #626b63 !important; }
+html:not(.dark) .how-page-steps .ss-step-number { color: #b84d3b !important; }
+html:not(.dark) .how-page-steps .ss-step-icon {
+  color: #a94435 !important;
+  background: #f7e5dc !important;
+  border: 1px solid #efd2c6 !important;
+}
+html:not(.dark) .how-page-note-inner {
+  color: #202720 !important;
+  background: linear-gradient(118deg,#fff7f1 0%,#f6eee7 50%,#edf4ee 100%) !important;
+  border: 1px solid #deded5 !important;
+}
+html:not(.dark) .how-page-note .btn-dark { color: #fffefa !important; background: #202720 !important; }
+
+/* Smooth, consistent interaction without forcing expensive animations on every element. */
+html { scroll-behavior: smooth !important; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+a, button, input, select, textarea, .studio-card, .ss-step, .ss-category-card {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: .22s;
+  transition-timing-function: cubic-bezier(.2,.72,.2,1);
+}
+button:active, .btn:active { transform: translateY(1px) scale(.99); }
+:focus-visible { scroll-margin-block: 90px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Lightweight cinematic logo intro: animated SVG mark, not a blocking video file. */
+.ss-intro {
+  position: fixed; z-index: 99999; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 13px;
+  color: #f4f1eb; background: radial-gradient(ellipse at 50% 45%,#29382f 0%,#17211b 54%,#101713 100%);
+  animation: ss-intro-out .5s 1.15s cubic-bezier(.65,0,.35,1) both;
+  pointer-events: none;
+}
+.ss-intro-orbit { position: relative; width: 92px; height: 92px; display: grid; place-items: center; }
+.ss-intro-orbit img { width: 68px; height: 68px; position: relative; z-index: 2; animation: ss-logo-arrive .9s cubic-bezier(.16,1,.3,1) both; }
+.ss-intro-orbit-ring {
+  position: absolute; inset: 0; border: 1px solid rgba(232,170,143,.35); border-top-color: #df795e;
+  border-radius: 50%; animation: ss-logo-orbit 1.3s linear infinite;
+}
+.ss-intro-wordmark { width: min(230px,62vw); height: auto; animation: ss-wordmark-arrive .7s .2s both; }
+.ss-intro-tagline { color: #c6cfc6; font-size: 9px; font-weight: 700; letter-spacing: .25em; animation: ss-wordmark-arrive .7s .3s both; }
+.ss-intro-progress { display: block; width: 112px; height: 2px; margin-top: 14px; overflow: hidden; background: rgba(255,255,255,.15); }
+.ss-intro-progress i { display: block; width: 100%; height: 100%; background: #df795e; transform-origin: left; animation: ss-intro-progress 1.05s .12s cubic-bezier(.4,0,.2,1) both; }
+@keyframes ss-logo-arrive { from { opacity: 0; transform: scale(.55) rotate(-18deg); filter: blur(7px); } to { opacity: 1; transform: scale(1) rotate(0); filter: blur(0); } }
+@keyframes ss-logo-orbit { to { transform: rotate(360deg); } }
+@keyframes ss-wordmark-arrive { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ss-intro-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes ss-intro-out { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  .ss-intro { animation-duration: .12s; animation-delay: .2s; }
+  .ss-intro-orbit-ring, .ss-intro-orbit img, .ss-intro-wordmark, .ss-intro-tagline, .ss-intro-progress i { animation-duration: .01ms !important; }
+}
+`;
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + "\n" + smoothIntroCss);
