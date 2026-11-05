@@ -3119,3 +3119,109 @@ replaceOnce("src/app/oauth-complete/page.tsx",
   'router.replace("/security/setup?callbackUrl=%2F")',
   'void syncAuthCookie().then(()=>router.replace("/")).catch(()=>router.replace("/login?error=google_session_failed"))',
   "complete Google sign-in for accounts without enrolled MFA");
+
+
+// REGISTRATION_GOOGLE_SIGNUP_VERIFICATION_FINAL_FIX
+// This block runs after the final registration component is written above.
+replaceOnce("src/lib/auth.ts",
+  'requireEmailVerification: emailVerificationEnabled,',
+  'requireEmailVerification: true,',
+  "always require native email verification for password-based registration");
+replaceOnce("src/lib/auth.ts",
+  'sendOnSignUp: emailVerificationEnabled,\n    sendOnSignIn: emailVerificationEnabled,',
+  'sendOnSignUp: true,\n    sendOnSignIn: true,',
+  "always send native email verification links for unverified accounts");
+
+replaceOnce("src/app/register/page.tsx",
+  'import { authClient, syncAuthCookie } from "@/lib/auth-client";',
+  'import { authClient } from "@/lib/auth-client";',
+  "remove the unverified signup fallback dependency");
+replaceOnce("src/app/register/page.tsx",
+  '  const [verificationAvailable, setVerificationAvailable] = useState(false);',
+  '  const [verificationAvailable, setVerificationAvailable] = useState(false);\n  const [verificationChecked, setVerificationChecked] = useState(false);\n  const [googleError, setGoogleError] = useState("");',
+  "track email verification readiness and Google OAuth errors");
+replaceOnce("src/app/register/page.tsx",
+  '  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) setVerificationAvailable(value.emailVerificationAvailable === true); }).catch(() => { if (active) setVerificationAvailable(false); }); return () => { active = false; }; }, []);',
+  '  useEffect(() => { let active = true; const oauthError = new URLSearchParams(window.location.search).get("error"); if (oauthError === "google_sign_in_failed" || oauthError === "email_not_verified") setGoogleError("Google could not verify this account. Choose a Google account with a verified email address and try again."); fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) { setVerificationAvailable(value.emailVerificationAvailable === true); setVerificationChecked(true); } }).catch(() => { if (active) { setVerificationAvailable(false); setVerificationChecked(true); } }); return () => { active = false; }; }, []);',
+  "read delivery readiness and surface Google verification failures");
+
+const googleSignupHandler = [
+  '  async function continueWithGoogle() {',
+  '    setBusy(true);',
+  '    setGoogleError("");',
+  '    try {',
+  '      const result = await authClient.signIn.social({',
+  '        provider: "google",',
+  '        callbackURL: "/oauth-complete",',
+  '        newUserCallbackURL: "/oauth-complete",',
+  '        errorCallbackURL: "/register?error=google_sign_in_failed",',
+  '        additionalParams: { prompt: "select_account" }',
+  '      });',
+  '      if (result.error) throw new Error(result.error.message || "Google sign-up could not be started.");',
+  '    } catch (error) {',
+  '      const message = error instanceof Error ? error.message : "Google sign-up could not be started.";',
+  '      setGoogleError(message);',
+  '      toast.error(message);',
+  '      setBusy(false);',
+  '    }',
+  '  }',
+  ''
+].join("\n");
+replaceOnce("src/app/register/page.tsx",
+  '  async function createAccount(event: React.FormEvent) {',
+  googleSignupHandler + '  async function createAccount(event: React.FormEvent) {',
+  "restore direct Google account creation on the final registration component");
+
+replaceOnce("src/app/register/page.tsx",
+  '    if (!passwordValid) {\n      toast.error("Please meet each password requirement.");\n      return;\n    }\n    setBusy(true);',
+  '    if (!passwordValid) {\n      toast.error("Please meet each password requirement: 8+ characters, uppercase, lowercase and a number.");\n      return;\n    }\n    if (!verificationChecked) {\n      toast.error("Secure email verification is still being checked. Please try again in a moment.");\n      return;\n    }\n    if (!verificationAvailable) {\n      toast.error("Email verification is temporarily unavailable. Use Google sign-up or try again later.");\n      return;\n    }\n    setBusy(true);',
+  "prevent password signup from creating an unverified account");
+replaceOnce("src/app/register/page.tsx",
+  '      if (verificationAvailable) {\n        setVerificationSent(true);\n        toast.success("Your verification link has been sent. Please check your inbox.");\n      } else {\n        await syncAuthCookie();\n        toast.success("Your account is ready. You can now sign in.");\n        router.push("/login");\n        router.refresh();\n      }',
+  '      setVerificationSent(true);\n      toast.success("Your verification link has been sent. Please check your inbox.");',
+  "keep email signup on the mandatory verification-link path");
+
+const googleSignupMarkup = [
+  '<div className="auth-v2-divider" aria-hidden="true"><span>OR SIGN UP WITH</span></div>',
+  '<button className="auth-v2-google" type="button" onClick={() => void continueWithGoogle()} disabled={busy}>',
+  '  <svg className="auth-v2-google-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">',
+  '    <path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.7-.4-4H24v7.6h11a9.4 9.4 0 0 1-4.1 6.2v5h6.6c3.9-3.6 6.1-8.9 6.1-14.8z"/>',
+  '    <path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5c-1.8 1.2-4.1 2-6.9 2-5.3 0-9.8-3.6-11.4-8.4H5.8v5.2C9.1 39.5 16 44 24 44z"/>',
+  '    <path fill="#FBBC05" d="M12.6 27.8a12 12 0 0 1 0-7.6V15H5.8a20 20 0 0 0 0 18z"/>',
+  '    <path fill="#EA4335" d="M24 12c3 0 5.6 1 7.7 3.1l5.8-5.8C34 5.9 29.5 4 24 4 16 4 9.1 8.5 5.8 15l6.8 5.2C14.2 15.6 18.7 12 24 12z"/>',
+  '  </svg>',
+  '  <span>{busy ? "Connecting to Google..." : "Continue with Google"}</span>',
+  '</button>',
+  '<p className="auth-v2-google-caption">Google verifies your email before StudioSpace creates your account.</p>'
+].join("\n");
+replaceOnce("src/app/register/page.tsx",
+  '<p className="auth-v2-intro">Set up your member profile to save studios and send booking requests.</p>',
+  '<p className="auth-v2-intro">Set up your member profile to save studios and send booking requests.</p>\n            {googleError && <p className="auth-v2-note" role="alert">{googleError}</p>}\n            ' + googleSignupMarkup,
+  "show direct Google signup above the email registration form");
+replaceOnce("src/app/register/page.tsx",
+  'disabled={busy || !passwordValid}',
+  'disabled={busy}',
+  "keep Create Account clickable and explain password requirements on submit");
+replaceOnce("src/app/register/page.tsx",
+  '<div className="auth-v2-note"><ShieldCheck size={16} /> {verificationAvailable ? "We will email you a secure verification link. No verification code is required." : "Email link verification will activate when the StudioSpace sender address is configured."}</div>',
+  '<div className="auth-v2-note"><ShieldCheck size={16} /> {verificationAvailable ? "A secure verification link will be emailed to you. You must verify your address before signing in." : "Email signup is paused until secure verification email delivery is available. Google signup remains available with Google email verification."}</div>',
+  "explain the enforced email verification requirement");
+
+const registrationCss = [
+  "",
+  "/* Registration: clear, accessible Google-first option and email divider. */",
+  ".auth-v2-divider { display:flex; align-items:center; gap:13px; margin:19px 0; color:#8a8c83; font-size:.67rem; font-weight:800; letter-spacing:.12em; }",
+  ".auth-v2-divider::before, .auth-v2-divider::after { content:\"\"; flex:1; height:1px; background:#e8e4dc; }",
+  ".auth-v2-google { display:flex; width:100%; min-height:52px; align-items:center; justify-content:center; gap:12px; padding:0 18px; border:1px solid #dedbd3; border-radius:12px; background:#fff; color:#252a25; font-size:.88rem; font-weight:750; box-shadow:0 3px 12px rgba(31,34,29,.045); cursor:pointer; }",
+  ".auth-v2-google:hover:not(:disabled) { border-color:#c8c4bb; background:#fbfaf7; }",
+  ".auth-v2-google:focus-visible { outline:3px solid rgba(217,108,96,.32); outline-offset:2px; }",
+  ".auth-v2-google:disabled { opacity:.6; cursor:wait; }",
+  ".auth-v2-google-mark { width:20px; height:20px; flex:0 0 auto; }",
+  ".auth-v2-google-caption { margin:9px 0 2px; color:#85877e; font-size:.72rem; line-height:1.55; text-align:center; }",
+  ".dark .auth-v2-divider { color:#b9beb4; }",
+  ".dark .auth-v2-divider::before, .dark .auth-v2-divider::after { background:#414b43; }",
+  ".dark .auth-v2-google { border-color:#465047; background:#f7f7f5; color:#202720; }",
+  ".dark .auth-v2-google-caption { color:#c1c4bc; }"
+].join("\n");
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + registrationCss);
+console.log("Final registration Google OAuth and mandatory verification repairs applied.");
