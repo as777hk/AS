@@ -2729,7 +2729,15 @@ replaceOnce("src/app/login/login-client.tsx",
 
 // Expose readiness booleans only; never expose credential values.
 mkdirSync("src/app/api/auth/readiness", { recursive: true });
-writeFileSync("src/app/api/auth/readiness/route.ts", "import { NextResponse } from \\"next/server\\";\\nexport const runtime = \\"nodejs\\";\\nexport async function GET() {\\n  const emailOtpAvailable = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);\\n  const googleAvailable = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);\\n  return NextResponse.json(\\n    { emailOtpAvailable, googleAvailable },\\n    { headers: { \\"Cache-Control\\": \\"no-store\\" } },\\n  );\\n}\\n");
+writeFileSync("src/app/api/auth/readiness/route.ts", [
+  'import { NextResponse } from "next/server";',
+  'export const runtime = "nodejs";',
+  'export async function GET() {',
+  '  const emailOtpAvailable = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
+  '  const googleAvailable = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);',
+  '  return NextResponse.json({ emailOtpAvailable, googleAvailable }, { headers: { "Cache-Control": "no-store" } });',
+  '}',
+].join("\n"));\\n  const googleAvailable = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);\\n  return NextResponse.json(\\n    { emailOtpAvailable, googleAvailable },\\n    { headers: { \\"Cache-Control\\": \\"no-store\\" } },\\n  );\\n}\\n");
 
 replaceOnce("src/app/api/security/methods/route.ts",
   'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods},{headers:{"Cache-Control":"no-store"}});',
