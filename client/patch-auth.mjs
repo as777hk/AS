@@ -2695,3 +2695,98 @@ replaceOnce("src/lib/auth.ts",
   '        if (credentialAccount) {\n          await ctx.context.internalAdapter.updatePassword(user.id, passwordHash);\n        } else {\n          await ctx.context.internalAdapter.createAccount({\n            userId: user.id,\n            accountId: user.id,\n            providerId: "credential",\n            password: passwordHash\n          });\n        }\n        await ctx.context.internalAdapter.updateUser(user.id, { adminPasswordVerified: true });\n      }\n    }),',
   "preserve admin identity across two-factor challenge");
 console.log("Admin password verification marker now persists before MFA challenge.");
+
+
+// Production authentication hardening: stable OAuth state, safe Google linking,
+// accurate email-delivery readiness, and an explicit OAuth completion route.
+replaceOnce("src/lib/auth.ts",
+  '  trustedOrigins: [baseURL, "http://localhost:3000"],',
+  '  trustedOrigins: [baseURL, "http://localhost:3000"],\n  account: {\n    storeStateStrategy: "cookie",\n    accountLinking: {\n      enabled: true,\n      trustedProviders: ["google"],\n      allowDifferentEmails: false,\n    },\n  },',
+  "harden Google OAuth state and same-email account linking");
+replaceOnce("src/lib/auth.ts",
+  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET }',
+  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, requireEmailVerification: true }',
+  "require verified Google email before issuing a session");
+
+replaceOnce("src/components/security-gate.tsx",
+  '"/forgot-password","/reset-password"]',
+  '"/forgot-password","/reset-password","/oauth-complete"]',
+  "allow the OAuth completion page through the security gate");
+
+replaceOnce("src/app/login/login-client.tsx",
+  'authClient.signIn.social({provider:"google",callbackURL:"/oauth-complete",errorCallbackURL:"/login?error=google_requires_mfa"})',
+  'authClient.signIn.social({provider:"google",callbackURL:"/oauth-complete",errorCallbackURL:"/login?error=google_requires_mfa",additionalParams:{prompt:"select_account"}})',
+  "prompt Google account selection on sign in");
+replaceOnce("src/app/register/page.tsx",
+  'provider: "google",\n        callbackURL: "/",\n        newUserCallbackURL: "/",\n        errorCallbackURL: "/register"',
+  'provider: "google",\n        callbackURL: "/oauth-complete",\n        newUserCallbackURL: "/oauth-complete",\n        errorCallbackURL: "/register?error=google_sign_in_failed",\n        additionalParams: { prompt: "select_account" }',
+  "send Google registrations through the secure account setup flow");
+
+replaceOnce("src/app/login/login-client.tsx",
+  '<p className="auth-v2-intro">Sign in to pick up where your creative work left off.</p>',
+  '<p className="auth-v2-intro">Sign in to pick up where your creative work left off.</p>\n            {search.get("error") === "google_requires_mfa" && <p role="alert" className="auth-v2-note">This account already has two-factor protection enabled. To keep it secure, sign in with your email and password, then complete the authenticator check. Google sign-in cannot complete this existing 2FA challenge yet.</p>}',
+  "explain the secure Google fallback for accounts with existing 2FA");
+
+// Expose readiness booleans only; never expose credential values.
+mkdirSync("src/app/api/auth/readiness", { recursive: true });
+writeFileSync("src/app/api/auth/readiness/route.ts", "import { NextResponse } from \\"next/server\\";\\nexport const runtime = \\"nodejs\\";\\nexport async function GET() {\\n  const emailOtpAvailable = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);\\n  const googleAvailable = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);\\n  return NextResponse.json(\\n    { emailOtpAvailable, googleAvailable },\\n    { headers: { \\"Cache-Control\\": \\"no-store\\" } },\\n  );\\n}\\n");
+
+replaceOnce("src/app/api/security/methods/route.ts",
+  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods},{headers:{"Cache-Control":"no-store"}});',
+  'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods,emailOtpAvailable:Boolean(process.env.RESEND_API_KEY&&process.env.AUTH_FROM_EMAIL)},{headers:{"Cache-Control":"no-store"}});',
+  "report email 2FA availability to security settings");
+
+replaceOnce("src/app/forgot-password/page.tsx",
+  'import {useState} from "react";',
+  'import {useEffect,useState} from "react";',
+  "load email delivery readiness on forgot password");
+replaceOnce("src/app/forgot-password/page.tsx",
+  'const router=useRouter();const [email,setEmail]=useState("");const [busy,setBusy]=useState(false);const [sent,setSent]=useState(false);const [error,setError]=useState("");',
+  'const router=useRouter();const [email,setEmail]=useState("");const [busy,setBusy]=useState(false);const [sent,setSent]=useState(false);const [error,setError]=useState("");const [emailOtpAvailable,setEmailOtpAvailable]=useState(false);const [checkingEmailOtp,setCheckingEmailOtp]=useState(true);useEffect(()=>{let active=true;fetch("/api/auth/readiness",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(v=>{if(active)setEmailOtpAvailable(v.emailOtpAvailable===true)}).catch(()=>{if(active)setEmailOtpAvailable(false)}).finally(()=>{if(active)setCheckingEmailOtp(false)});return()=>{active=false}},[]);',
+  "check email delivery before requesting password reset");
+replaceOnce("src/app/forgot-password/page.tsx",
+  'async function submit(event:React.FormEvent){event.preventDefault();setBusy(true);',
+  'async function submit(event:React.FormEvent){event.preventDefault();if(!emailOtpAvailable){setError("Email verification is unavailable because the StudioSpace email sender is not configured. No code has been sent.");return}setBusy(true);',
+  "block password-reset requests while email delivery is unavailable");
+replaceOnce("src/app/forgot-password/page.tsx",
+  '<button className="btn btn-dark" type="submit" disabled={busy}>',
+  '<button className="btn btn-dark" type="submit" disabled={busy||checkingEmailOtp||!emailOtpAvailable}>',
+  "disable unavailable password reset delivery");
+replaceOnce("src/app/forgot-password/page.tsx",
+  '<p style={{color:"var(--muted)",lineHeight:1.8}}>We will send a one-time verification code to the email address on your account. Your password will not change until that code is verified.</p>',
+  '<p style={{color:"var(--muted)",lineHeight:1.8}}>We will send a one-time verification code to the email address on your account. Your password will not change until that code is verified.</p>{!checkingEmailOtp&&!emailOtpAvailable&&<p role="alert" style={{color:"#b42318"}}>Email verification is currently unavailable. The email sender is not configured, so no code can be delivered yet.</p>}',
+  "show the real email delivery status on password recovery");
+
+replaceOnce("src/app/reset-password/page.tsx",
+  'import {useMemo,useState} from "react";',
+  'import {useEffect,useMemo,useState} from "react";',
+  "load email readiness on reset password");
+replaceOnce("src/app/reset-password/page.tsx",
+  'const router=useRouter();const search=useSearchParams();const initialEmail=useMemo(()=>search.get("email")||"",[search]);const [email,setEmail]=useState(initialEmail);const [otp,setOtp]=useState("");const [password,setPassword]=useState("");const [confirm,setConfirm]=useState("");const [show,setShow]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [done,setDone]=useState(false);',
+  'const router=useRouter();const search=useSearchParams();const initialEmail=useMemo(()=>search.get("email")||"",[search]);const [email,setEmail]=useState(initialEmail);const [otp,setOtp]=useState("");const [password,setPassword]=useState("");const [confirm,setConfirm]=useState("");const [show,setShow]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [done,setDone]=useState(false);const [emailOtpAvailable,setEmailOtpAvailable]=useState(false);const [checkingEmailOtp,setCheckingEmailOtp]=useState(true);useEffect(()=>{let active=true;fetch("/api/auth/readiness",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(v=>{if(active)setEmailOtpAvailable(v.emailOtpAvailable===true)}).catch(()=>{if(active)setEmailOtpAvailable(false)}).finally(()=>{if(active)setCheckingEmailOtp(false)});return()=>{active=false}},[]);',
+  "check email delivery before accepting password reset");
+replaceOnce("src/app/reset-password/page.tsx",
+  'async function submit(event:React.FormEvent){event.preventDefault();setError("");',
+  'async function submit(event:React.FormEvent){event.preventDefault();setError("");if(!emailOtpAvailable){setError("Email verification is unavailable because the StudioSpace email sender is not configured.");return}',
+  "block verification attempts when email sender is missing");
+replaceOnce("src/app/reset-password/page.tsx",
+  '<button className="btn btn-dark" type="submit" disabled={busy}>',
+  '<button className="btn btn-dark" type="submit" disabled={busy||checkingEmailOtp||!emailOtpAvailable}>',
+  "disable reset submission while delivery is unavailable");
+replaceOnce("src/app/reset-password/page.tsx",
+  '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>',
+  '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>{!checkingEmailOtp&&!emailOtpAvailable&&<p role="alert" style={{color:"#b42318"}}>Email verification is currently unavailable. The email sender is not configured, so a valid code cannot be checked.</p>}',
+  "show reset email readiness to users");
+
+replaceOnce("src/app/login/login-client.tsx",
+  'import { useMemo, useState } from "react";',
+  'import { useEffect, useMemo, useState } from "react";',
+  "load runtime email login readiness");
+replaceOnce("src/app/login/login-client.tsx",
+  'const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";',
+  'const [otpEnabled, setOtpEnabled] = useState(false);',
+  "use runtime email sender readiness for login UI");
+replaceOnce("src/app/login/login-client.tsx",
+  'const [busy, setBusy] = useState(false);',
+  'const [busy, setBusy] = useState(false);\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject()).then(v => { if (active) setOtpEnabled(v.emailOtpAvailable === true); }).catch(() => { if (active) setOtpEnabled(false); }); return () => { active = false; }; }, []);',
+  "keep sign-in email-code option in sync with delivery configuration");
