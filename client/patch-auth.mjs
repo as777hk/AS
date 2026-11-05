@@ -2898,8 +2898,8 @@ replaceOnce("src/lib/auth.ts",
   'requireEmailVerification: emailVerificationEnabled,',
   "require native link verification when a verified sender is configured");
 replaceOnce("src/lib/auth.ts",
-  'sendOnSignUp: true,\\n    sendOnSignIn: true,',
-  'sendOnSignUp: emailVerificationEnabled,\\n    sendOnSignIn: emailVerificationEnabled,',
+  'sendOnSignUp: true,\n    sendOnSignIn: true,',
+  'sendOnSignUp: emailVerificationEnabled,\n    sendOnSignIn: emailVerificationEnabled,',
   "gate native verification emails on real delivery readiness");
 
 replaceOnce("src/app/register/page.tsx",
@@ -2912,11 +2912,11 @@ replaceOnce("src/app/register/page.tsx",
   "preserve session setup when email link sender is not configured");
 replaceOnce("src/app/register/page.tsx",
   '  const router = useRouter();',
-  '  const router = useRouter();\\n  const [verificationAvailable, setVerificationAvailable] = useState(false);\\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) setVerificationAvailable(value.emailVerificationAvailable === true); }).catch(() => { if (active) setVerificationAvailable(false); }); return () => { active = false; }; }, []);',
+  '  const router = useRouter();\n  const [verificationAvailable, setVerificationAvailable] = useState(false);\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) setVerificationAvailable(value.emailVerificationAvailable === true); }).catch(() => { if (active) setVerificationAvailable(false); }); return () => { active = false; }; }, []);',
   "read Better Auth email verification readiness for signup");
 replaceOnce("src/app/register/page.tsx",
-  '      setVerificationSent(true);\\n      toast.success("Your verification link has been sent. Please check your inbox.");',
-  '      if (verificationAvailable) {\\n        setVerificationSent(true);\\n        toast.success("Your verification link has been sent. Please check your inbox.");\\n      } else {\\n        await syncAuthCookie();\\n        toast.success("Your account is ready. You can now sign in.");\\n        router.push("/login");\\n        router.refresh();\\n      }',
+  '      setVerificationSent(true);\n      toast.success("Your verification link has been sent. Please check your inbox.");',
+  '      if (verificationAvailable) {\n        setVerificationSent(true);\n        toast.success("Your verification link has been sent. Please check your inbox.");\n      } else {\n        await syncAuthCookie();\n        toast.success("Your account is ready. You can now sign in.");\n        router.push("/login");\n        router.refresh();\n      }',
   "only show link-pending state when the sender can actually deliver");
 replaceOnce("src/app/register/page.tsx",
   '<div className="auth-v2-note"><ShieldCheck size={16} /> We will email you a secure verification link. No verification code is required.</div>',
