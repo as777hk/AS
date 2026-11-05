@@ -2823,14 +2823,14 @@ patchGeneratedOutput(
 );
 patchGeneratedOutput(
   "src/lib/auth.ts",
-  'type === "sign-in"\\n    ? "Your sign-in code"\\n    : "Reset your StudioSpace password";',
-  'type === "sign-in"\\n    ? "Your sign-in code"\\n    : type === "two-factor"\\n      ? "Your security verification code"\\n      : "Reset your StudioSpace password";',
+  ': "Reset your StudioSpace password";',
+  ': type === "two-factor" ? "Your security verification code" : "Reset your StudioSpace password";',
   "use correct subject for email two-factor codes"
 );
 patchGeneratedOutput(
   "src/lib/auth.ts",
-  'type === "sign-in"\\n      ? "Enter this code on the StudioSpace sign-in page to access your account."\\n      : "Enter this code to continue resetting your StudioSpace password.";',
-  'type === "sign-in"\\n      ? "Enter this code on the StudioSpace sign-in page to access your account."\\n      : type === "two-factor"\\n        ? "Enter this code to complete two-factor verification for your StudioSpace account."\\n        : "Enter this code to continue resetting your StudioSpace password."; ',
+  ': "Enter this code to continue resetting your StudioSpace password."; ',
+  ': type === "two-factor" ? "Enter this code to complete two-factor verification for your StudioSpace account." : "Enter this code to continue resetting your StudioSpace password."; ',
   "use correct email copy for email two-factor codes"
 );
 
