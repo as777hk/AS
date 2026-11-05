@@ -2737,7 +2737,7 @@ writeFileSync("src/app/api/auth/readiness/route.ts", [
   '  const googleAvailable = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);',
   '  return NextResponse.json({ emailOtpAvailable, googleAvailable }, { headers: { "Cache-Control": "no-store" } });',
   '}',
-].join("\n"));\\n  const googleAvailable = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);\\n  return NextResponse.json(\\n    { emailOtpAvailable, googleAvailable },\\n    { headers: { \\"Cache-Control\\": \\"no-store\\" } },\\n  );\\n}\\n");
+].join("\n"));
 
 replaceOnce("src/app/api/security/methods/route.ts",
   'return NextResponse.json({enabled:record?.twoFactorEnabled===true,methods},{headers:{"Cache-Control":"no-store"}});',
