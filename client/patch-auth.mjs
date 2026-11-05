@@ -2703,10 +2703,7 @@ replaceOnce("src/lib/auth.ts",
   '  trustedOrigins: [baseURL, "http://localhost:3000"],',
   '  trustedOrigins: [baseURL, "http://localhost:3000"],\n  account: {\n    storeStateStrategy: "cookie",\n    accountLinking: {\n      enabled: true,\n      trustedProviders: ["google"],\n      allowDifferentEmails: false,\n    },\n  },',
   "harden Google OAuth state and same-email account linking");
-replaceOnce("src/lib/auth.ts",
-  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET }',
-  'google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, requireEmailVerification: true }',
-  "require verified Google email before issuing a session");
+// Google email verification is already required in the earlier provider configuration patch.
 
 replaceOnce("src/components/security-gate.tsx",
   '"/forgot-password","/reset-password"]',
