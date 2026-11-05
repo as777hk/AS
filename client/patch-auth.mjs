@@ -1257,6 +1257,8 @@ export function ScrollMotion() {
       activeTarget.style.removeProperty("--ss-tilt-y");
       activeTarget.style.removeProperty("--ss-hover-x");
       activeTarget.style.removeProperty("--ss-hover-y");
+      currentTiltX = 0;
+      currentTiltY = 0;
       activeTarget = null;
     };
 
@@ -1274,34 +1276,42 @@ export function ScrollMotion() {
       document.body.classList.add("ss-pointer-live");
     };
 
-    // Coalesce the aura and active-surface response to one visual update per frame.
+    // Interpolate pointer tilt on animation frames. This avoids transform
+    // transition lag (which can make cards oscillate behind the pointer).
     let pointerFrame = 0;
     let latestPointerX = 0;
     let latestPointerY = 0;
+    let currentTiltX = 0;
+    let currentTiltY = 0;
+    const updatePointerMotion = () => {
+      pointerFrame = 0;
+      if (aura) {
+        aura.style.transform = "translate3d(" + latestPointerX + "px," + latestPointerY + "px,0)";
+      }
+      const target = activeTarget;
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const x = Math.max(0, Math.min(100, ((latestPointerX - rect.left) / Math.max(rect.width, 1)) * 100));
+      const y = Math.max(0, Math.min(100, ((latestPointerY - rect.top) / Math.max(rect.height, 1)) * 100));
+      const isStudioCard = target.matches(".studio-card");
+      const motionScale = reduced.matches ? 0.35 : 1;
+      const targetTiltX = ((x - 50) / 50) * (isStudioCard ? 4.8 : 3.8) * motionScale;
+      const targetTiltY = ((50 - y) / 50) * (isStudioCard ? 3.6 : 3.0) * motionScale;
+      currentTiltX += (targetTiltX - currentTiltX) * 0.22;
+      currentTiltY += (targetTiltY - currentTiltY) * 0.22;
+      target.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
+      target.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
+      target.style.setProperty("--ss-tilt-x", currentTiltX.toFixed(2) + "deg");
+      target.style.setProperty("--ss-tilt-y", currentTiltY.toFixed(2) + "deg");
+      if (Math.abs(targetTiltX - currentTiltX) > 0.025 || Math.abs(targetTiltY - currentTiltY) > 0.025) {
+        pointerFrame = window.requestAnimationFrame(updatePointerMotion);
+      }
+    };
     const onPointerMove = (event: PointerEvent) => {
       if (!finePointer.matches || event.pointerType === "touch") return;
       latestPointerX = event.clientX;
       latestPointerY = event.clientY;
-      if (pointerFrame) return;
-      pointerFrame = window.requestAnimationFrame(() => {
-        pointerFrame = 0;
-        if (aura) {
-          aura.style.transform = "translate3d(" + latestPointerX + "px," + latestPointerY + "px,0)";
-        }
-        const target = activeTarget;
-        if (!target) return;
-        const rect = target.getBoundingClientRect();
-        const x = Math.max(0, Math.min(100, ((latestPointerX - rect.left) / Math.max(rect.width, 1)) * 100));
-        const y = Math.max(0, Math.min(100, ((latestPointerY - rect.top) / Math.max(rect.height, 1)) * 100));
-        const isStudioCard = target.matches(".studio-card");
-        const motionScale = reduced.matches ? 0.35 : 1;
-        const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4) * motionScale;
-        const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5) * motionScale;
-        target.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
-        target.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
-        target.style.setProperty("--ss-tilt-x", tiltX.toFixed(2) + "deg");
-        target.style.setProperty("--ss-tilt-y", tiltY.toFixed(2) + "deg");
-      });
+      if (!pointerFrame) pointerFrame = window.requestAnimationFrame(updatePointerMotion);
     };
 
     const onPointerOut = (event: PointerEvent) => {
@@ -1497,7 +1507,7 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
       rotateX(var(--ss-tilt-y, 0deg))
       rotateY(var(--ss-tilt-x, 0deg))
       translate3d(0,-9px,0)
-      scale(1.018) !important;
+      scale(1.012) !important;
     box-shadow:
       0 28px 58px rgba(24,31,25,.19),
       0 8px 22px rgba(210,92,69,.12) !important;
@@ -2803,10 +2813,10 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
       perspective(1080px)
       rotateX(var(--ss-tilt-y, 0deg))
       rotateY(var(--ss-tilt-x, 0deg))
-      translate3d(0, -10px, 0)
+      translate3d(0, -7px, 0)
       scale(1.018) !important;
     transform-style: preserve-3d;
-    transition: transform .22s ease, box-shadow .28s ease, border-color .28s ease !important;
+    transition: box-shadow .28s ease, border-color .28s ease !important;
     box-shadow: 0 28px 58px rgba(24,31,25,.2), 0 8px 22px rgba(210,92,69,.12) !important;
     border-color: rgba(223,112,88,.62) !important;
   }
