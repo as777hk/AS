@@ -2503,19 +2503,20 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
 console.log("Cursor effects limited to cards and frame-synced.");
 
 
+
 // Accessible show/hide controls for password inputs on Admin, Login and Register.
-// This only changes the local input type; passwords are never copied to page text or logs.
+// The reveal control only changes the local input type; it never writes passwords to page text or logs.
 replaceOnce("src/app/login/login-client.tsx",
-  'import { ArrowLeft, ArrowRight, KeyRound, LockKeyhole, Mail, ShieldCheck } from "lucide-react";',
-  'import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, LockKeyhole, Mail, ShieldCheck } from "lucide-react";',
+  'import {ArrowLeft,ArrowRight,ShieldCheck} from "lucide-react";',
+  'import {ArrowLeft,ArrowRight,Eye,EyeOff,ShieldCheck} from "lucide-react";',
   "add accessible password visibility icons to member login");
 replaceOnce("src/app/login/login-client.tsx",
-  '  const [password, setPassword] = useState("");',
-  '  const [password, setPassword] = useState("");\n  const [showPassword, setShowPassword] = useState(false);',
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");',
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [showPassword,setShowPassword]=useState(false);',
   "add member login password visibility state");
 replaceOnce("src/app/login/login-client.tsx",
-  '<input className="auth-v2-input" id="login-password" type="password" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="Enter your password" />',
-  '<div className="auth-v2-password-wrap"><input className="auth-v2-input" id="login-password" type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="Enter your password" /><button className="auth-v2-password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>',
+  '<input className="auth-v2-input" id="login-password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password"/>',
+  '<div className="auth-v2-password-wrap"><input className="auth-v2-input" id="login-password" type={showPassword?"text":"password"} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password"/><button className="auth-v2-password-toggle" type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div>',
   "add show hide toggle to member login password");
 
 replaceOnce("src/app/register/page.tsx",
@@ -2532,20 +2533,16 @@ replaceOnce("src/app/register/page.tsx",
   "add show hide toggle to registration password");
 
 replaceOnce("src/app/as/page.tsx",
-  'import { ArrowLeft, ArrowUpRight, Fingerprint, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";',
-  'import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Fingerprint, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";',
+  'import {ArrowLeft,ArrowUpRight,Fingerprint,KeyRound,LockKeyhole,ShieldCheck} from "lucide-react";',
+  'import {ArrowLeft,ArrowUpRight,Eye,EyeOff,Fingerprint,KeyRound,LockKeyhole,ShieldCheck} from "lucide-react";',
   "add accessible password visibility icons to admin portal");
 replaceOnce("src/app/as/page.tsx",
-  '  const [password, setPassword] = useState("");',
-  '  const [password, setPassword] = useState("");\n  const [showPassword, setShowPassword] = useState(false);',
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");',
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [showPassword,setShowPassword]=useState(false);',
   "add admin password visibility state");
 replaceOnce("src/app/as/page.tsx",
-  '                  type="password"\n                  autoComplete="current-password"',
-  '                  type={showPassword ? "text" : "password"}\n                  autoComplete="current-password"',
-  "make admin password input visibility state driven");
-replaceOnce("src/app/as/page.tsx",
-  '                  placeholder="Enter secure password"\n                />\n              </div>',
-  '                  placeholder="Enter secure password"\n                />\n                <button className="as-portal-password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>\n              </div>',
+  '<label htmlFor="as-admin-password">ADMINISTRATOR PASSWORD</label><div className="as-portal-input-wrap"><KeyRound size={17}/><input id="as-admin-password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter secure password"/></div>',
+  '<label htmlFor="as-admin-password">ADMINISTRATOR PASSWORD</label><div className="as-portal-input-wrap"><KeyRound size={17}/><input id="as-admin-password" type={showPassword?"text":"password"} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter secure password"/><button className="as-portal-password-toggle" type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div>',
   "add show hide toggle to admin password");
 
 writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
@@ -2574,4 +2571,4 @@ writeFileSync("src/app/as/portal.css", readFileSync("src/app/as/portal.css", "ut
 .as-portal-password-toggle:focus-visible { outline: 2px solid var(--as-lime); outline-offset: 2px; }
 .as-portal-input-wrap input { flex: 1; width: auto; }
 `);
-console.log("Accessible password visibility toggles added to Admin, Login and Register.");
+console.log("Accessible password show/hide toggles added to Admin, Login and Register.");
