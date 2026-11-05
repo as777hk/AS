@@ -2462,10 +2462,8 @@ let generatedCaptcha = readFileSync(generatedCaptchaPath, "utf8");
 generatedCaptcha = generatedCaptcha.replace('db.collection("loginCaptchas")', 'db.collection<any>("loginCaptchas")');
 writeFileSync(generatedCaptchaPath, generatedCaptcha);
 
-replaceOnce("src/app/security/setup/page.tsx",
-  'if(!result.data?.totpURI)throw new Error("The authenticator setup did not return a QR code.");setUri(result.data.totpURI);setBackupCodes(result.data.backupCodes||[])',
-  'const totpData=result.data as {method?:string;totpURI?:string;backupCodes?:string[]};if(totpData.method!=="totp"||!totpData.totpURI)throw new Error("The authenticator setup did not return a TOTP QR code.");setUri(totpData.totpURI);setBackupCodes(totpData.backupCodes||[])',
-  "narrow TOTP setup response before reading QR and backup codes");
+// TOTP result is already narrowed in each generated setup page above; no post-write patch needed.
+
 
 replaceOnce("src/lib/auth-client.ts",
   'import { emailOTPClient, jwtClient, twoFactorClient } from "better-auth/client/plugins";',
