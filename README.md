@@ -42,7 +42,7 @@ npm install
 npm run dev
 ```
 
-Create a `.env.local` with local values for `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `MONGODB_URI`, `MONGODB_DB`, `NEXT_PUBLIC_SITE_URL`, `API_SERVER_URL`, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The frontend expects the API to be reachable at `API_SERVER_URL`.
+Create a `.env.local` with local values for `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `MONGODB_URI`, `MONGODB_DB`, `NEXT_PUBLIC_SITE_URL`, `API_SERVER_URL`, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The frontend expects the API to be reachable at `API_SERVER_URL`. See the root `.env.example` for server-only email and image-upload settings.
 
 ### Backend
 
@@ -105,22 +105,20 @@ To enable local uploads in production:
 Only image files are accepted, with a maximum upload size of 32,000,000 bytes. The supported file picker formats are JPEG, PNG and WebP. The API key must remain server-side; do not rename it to a `NEXT_PUBLIC_*` variable. Pasting an already-hosted image URL remains available when uploads are not configured.
 
 
-## Account security and email verification codes
+## Account security and email two-factor authentication
 
-StudioSpace includes a custom member sign-in and registration experience. Password sign-in remains available. Email one-time codes can be enabled for new account verification and passwordless sign-in through Better Auth's Email OTP plugin.
+Email two-factor authentication (2FA) is optional and separate from account registration. The assignment requires signup to work without email verification, so StudioSpace keeps both `requireEmailVerification` and `sendVerificationOnSignUp` disabled. The password-based registration flow must not wait for an email code. Password recovery is intentionally unavailable for this assessment.
 
-To activate email codes in Vercel:
+To enable email as a second-factor method:
 
 1. Create a Resend account and verify the sending domain you will use.
-2. In the **as-frontend** Vercel project, add `RESEND_API_KEY` as a Sensitive environment variable.
-3. Add `AUTH_FROM_EMAIL` as the verified sender, for example `StudioSpace <accounts@your-verified-domain.com>`.
-4. Add `NEXT_PUBLIC_EMAIL_OTP_ENABLED=true` as a Plain environment variable so the account screens expose the email code flow.
-5. Apply the variables to Production. Add them to Preview and Development if those environments should send real codes.
-6. Redeploy the frontend.
+2. In the Vercel **as-frontend** project, add `RESEND_API_KEY` as a Sensitive environment variable.
+3. Add `AUTH_FROM_EMAIL` as the verified sender identity, for example `StudioSpace <accounts@your-verified-domain.com>`.
+4. Add `EMAIL_2FA_ENABLED=true` as a server-side Plain environment variable. This flag only enables email 2FA after both sender settings are present.
+5. Apply the values to Production. Add them to Preview and Development only when those environments should send real email.
+6. Redeploy the frontend, then open Account Security and enroll Email 2FA.
 
-When both server-side email variables are present, the server requires email verification before password sign-in. Verification codes contain six digits, expire after five minutes, allow five attempts and are stored in hashed form. The Resend API key is used only on the server and must never be exposed with a `NEXT_PUBLIC_` prefix.
-
-If these environment variables are not configured, the existing password account flow remains enabled and the code options stay unavailable. Do not enable only the public flag without configuring the server-side sender.
+Keep `NEXT_PUBLIC_EMAIL_OTP_ENABLED` unset or `false`; it controls a separate passwordless email sign-in flow and is not needed for the assignment's email second factor. Never expose `RESEND_API_KEY` through a `NEXT_PUBLIC_*` variable. Email 2FA codes are six digits, expire after five minutes, allow five attempts and are stored hashed. Signup email verification remains off even after Resend is configured.
 
 Phone-number verification uses the Better Auth Phone Number plugin with Twilio Verify. The code sends SMS verification requests from the server, checks the code with Twilio, stores the verified phone number on the signed-in member, and makes phone-code sign-in available for verified numbers.
 

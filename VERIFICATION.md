@@ -5,21 +5,21 @@
 - The public frontend/full-stack repository is https://github.com/samscaleup777/AS.
 - The public, separate Express backend repository is https://github.com/samscaleup777/AS-backend.
 - The frontend repo exposes readable application source below `client/src/`; Vercel reconstructs the complete frontend from `client/.source/` archive shards and then applies `client/patch-auth.mjs` before installing and building. The patch script is the authoritative place for build-time homepage, brand and upload customisations.
-- The frontend has 79 commits and the backend has 26 commits, exceeding the assignment minimums of 15 client and 8 server commits. Feature history includes booking availability, wishlist persistence, studio CRUD, authentication, validation, responsive UI, accessible dialogs, the new visual identity and image-upload route.
+- The frontend repository has at least 100 recent commits available through the GitHub API; the separate backend repository has 38 commits. Both exceed the assignment minimums of 15 client and 8 server commits. Feature history includes booking availability, wishlist persistence, studio CRUD, authentication, validation, responsive UI, accessible dialogs, the new visual identity and image-upload route.
 - MongoDB Atlas cluster `AnnikaCluster`, database `studiospace`.
 - Dedicated Atlas API user `studiospace_api` has only `readWrite` access to the `studiospace` database. Its URI is stored as a Sensitive Vercel environment value.
-- Six illustrative demo studio documents exist in the `studios` collection, assigned to `examiner@studiospace.demo`.
-- The examiner user exists in Better Auth's `user` collection. At last count the database had 6 studios, 1 matching examiner user, 0 bookings and 0 wishlists.
+- Six illustrative demo studio documents exist in the `studios` collection, all marked as demo data and assigned to `examiner@studiospace.demo`. Current Atlas counts: 6 studios, 6 users, 7 accounts, 3 two-factor records, 1 wishlist, 0 bookings and 0 reviews.
+- The examiner user exists in Better Auth's `user` collection.
 
 ## Vercel projects
 
 - Frontend: Vercel project `as-frontend`, Next.js, Node 22, GitHub repo `samscaleup777/AS`, stable URL https://as-kappa-six.vercel.app.
 - Backend: Vercel project `as`, Express, Node 22, GitHub repo `samscaleup777/AS-backend`, stable URL https://as-two-lac.vercel.app.
 - The obsolete Vercel `as-api` project is no longer present. The project list contains only `as` and `as-frontend`.
-- The brand-refresh frontend build for commit `93878749db1a49264816b5b160a8b4933a13cef5` compiled successfully; TypeScript passed and the production deployment reached `READY`. The new route `/api/upload` is present in the production route list. README, logo asset and brand-guide commits are queued for a follow-up deployment.
+- The production alias `https://as-kappa-six.vercel.app` maps to frontend deployment `dpl_FNWWcXRt5LcTBZoS59bo9LiJeCb4` at commit `64549d7328a58a3f01855c458715282a5dd770af`, state `READY`. A later duplicate production attempt was `CANCELED` but did not replace the alias. Vercel's completed frontend build reported TypeScript success and 28/28 static pages generated. The latest backend production deployment `dpl_GCGQ942NT2BtRUZXj2HG6CsVa69t` is `READY` at commit `e3de09669df107d1358e94281c6e9a6e3eaae598`.
 - Backend production build is `READY`.
 
-## Live endpoint checks
+## Previously recorded endpoint checks (not a substitute for current browser testing)
 
 - `GET https://as-two-lac.vercel.app/`: HTTP 200; returns StudioSpace API name, online status and endpoint directory.
 - `GET /health`: HTTP 200.
@@ -37,17 +37,18 @@
 - Frontend ESLint: 0 errors, 7 non-blocking `@next/next/no-img-element` warnings for dynamically supplied/remote images.
 - Backend `npm test`: TypeScript compilation passed; 4/4 booking-rule tests passed (date, time window, interval overlap and total calculation).
 - Production dependency audit after jsPDF upgrade to 4.2.1: 0 production vulnerabilities. Full audit has 16 moderate findings in development-only ESLint tooling; no high or critical findings.
-- Latest runtime error history contains old events from earlier deployments: the Better Auth `sessionCookieCache` configuration error and one old OAuth `State not found` event. The current source removes the invalid session-cookie-cache option, current Google initiation succeeds, and the latest clean production build is READY. Do not treat historical events as a current live error.
+- Runtime error history includes earlier Google OAuth state/account-linking errors and email OTP delivery failures from before the latest production deployment. Email OTP was not configured when those failures occurred; the current production logs have not yet been replaced by a verified end-to-end browser test. Recheck OAuth and email delivery after the new preview build is verified.
 
-## Still requires a human browser pass
+## Current items still requiring manual verification
 
-1. Open the live Login page and complete Google consent/callback with a Google account allowed by the OAuth consent screen.
-2. Sign in with the examiner email/password and check the HTTPOnly `better_auth_jwt` cookie is issued.
-3. Refresh `/my-listings` and `/my-bookings` while signed in.
+1. Configure Resend: set a verified sender identity as `AUTH_FROM_EMAIL`, confirm the Sensitive `RESEND_API_KEY` is valid, and set `EMAIL_2FA_ENABLED=true` only after both sender settings are ready. `AUTH_FROM_EMAIL` is currently missing from Vercel, and runtime logs show previous email-code delivery failures. Signup email verification must remain disabled.
+2. Open the live Login page and complete Google consent/callback with an account allowed by the Google OAuth consent screen. Google OAuth initiation was previously checked, but the complete browser callback is not yet verified.
+3. Sign in with the examiner account, check the HTTPOnly `better_auth_jwt` cookie, and refresh `/my-listings` and `/my-bookings` while signed in.
 4. Add, edit and delete a studio; verify another account cannot edit the examiner's listing.
 5. Create a booking, cancel a Pending request, then confirm one as host; submit an overlapping confirmed interval and verify it is rejected.
 6. Save/unsave a studio, refresh the saved page and download a confirmed-booking PDF invoice.
 7. Test Light/Dark mode, the mobile navigation, category filters, homepage hash links and image rendering on a phone-sized viewport.
+8. Add a real `IMGBB_API_KEY` to the frontend Vercel project and test an authenticated file upload. Hosted image URLs remain usable until the key is configured.
 
 ## Honest feature boundaries
 
