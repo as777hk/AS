@@ -2720,7 +2720,7 @@ replaceOnce("src/app/register/page.tsx",
   "send Google registrations through the secure account setup flow");
 
 replaceOnce("src/app/login/login-client.tsx",
-  '<p className="auth-v2-intro">Sign in to pick up where your creative work left off.</p>',
+  '<p className="auth-v2-intro">Sign in with your password, then verify using your authenticator app.</p>',
   '<p className="auth-v2-intro">Sign in to pick up where your creative work left off.</p>\n            {search.get("error") === "google_requires_mfa" && <p role="alert" className="auth-v2-note">This account already has two-factor protection enabled. To keep it secure, sign in with your email and password, then complete the authenticator check. Google sign-in cannot complete this existing 2FA challenge yet.</p>}',
   "explain the secure Google fallback for accounts with existing 2FA");
 
