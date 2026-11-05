@@ -2777,6 +2777,3 @@ replaceOnce("src/app/reset-password/page.tsx",
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>',
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>{!checkingEmailOtp&&!emailOtpAvailable&&<p role="alert" style={{color:"#b42318"}}>Email verification is currently unavailable. The email sender is not configured, so a valid code cannot be checked.</p>}',
   "show reset email readiness to users");
-
- return () => { active = false; }; }, []);',
-  "keep sign-in email-code option in sync with delivery configuration");
