@@ -2794,7 +2794,7 @@ function patchGeneratedOutput(path, before, after, label) {
 patchGeneratedOutput(
   "src/lib/auth.ts",
   'const emailOtpEnabled = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
-  'const emailOtpDeliveryReady = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);\\nconst emailTwoFactorEnabled = process.env.EMAIL_2FA_ENABLED === "true" && emailOtpDeliveryReady;',
+  'const emailOtpDeliveryReady = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);\nconst emailTwoFactorEnabled = process.env.EMAIL_2FA_ENABLED === "true" && emailOtpDeliveryReady;',
   "separate email delivery readiness from email 2FA switch"
 );
 patchGeneratedOutput(
@@ -2863,14 +2863,14 @@ securityGate = securityGate.replaceAll('"/forgot-password","/reset-password",', 
 writeFileSync("src/components/security-gate.tsx", securityGate);
 
 mkdirSync("src/app/forgot-password", { recursive: true });
-writeFileSync("src/app/forgot-password/page.tsx", 'import { notFound } from "next/navigation";\\nexport default function ForgotPasswordPage(): never { notFound(); }\\n');
+writeFileSync("src/app/forgot-password/page.tsx", 'import { notFound } from "next/navigation";\nexport default function ForgotPasswordPage(): never { notFound(); }\n');
 
 console.log("Assignment auth compliance applied: signup email verification off, email 2FA independently gated, password recovery unavailable.");
 
 
 // There is intentionally no password-recovery flow in this assignment.
 mkdirSync("src/app/reset-password", { recursive: true });
-writeFileSync("src/app/reset-password/page.tsx", 'import { notFound } from "next/navigation";\\nexport default function ResetPasswordPage(): never { notFound(); }\\n');
+writeFileSync("src/app/reset-password/page.tsx", 'import { notFound } from "next/navigation";\nexport default function ResetPasswordPage(): never { notFound(); }\n');
 
 let securitySetup = readFileSync("src/app/security/setup/page.tsx", "utf8");
 securitySetup = securitySetup
