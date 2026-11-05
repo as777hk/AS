@@ -2835,7 +2835,7 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
 `);
 
 
-// Keep registration and sign-in UI in sync with the server-side email sender
+// Keep the registration screen in sync with the server-side email sender
 // readiness, instead of relying on a separate build-time NEXT_PUBLIC flag.
 replaceOnce("src/app/register/page.tsx",
   'import { useState } from "react";',
@@ -2845,11 +2845,3 @@ replaceOnce("src/app/register/page.tsx",
   '  const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";',
   '  const [otpEnabled, setOtpEnabled] = useState(false);\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) setOtpEnabled(value.emailOtpAvailable === true); }).catch(() => { if (active) setOtpEnabled(false); }); return () => { active = false; }; }, []);',
   "use live readiness for registration verification step");
-replaceOnce("src/app/login/login-client.tsx",
-  'import { useMemo, useState } from "react";',
-  'import { useEffect, useMemo, useState } from "react";',
-  "load sign-in email verification readiness");
-replaceOnce("src/app/login/login-client.tsx",
-  '  const otpEnabled = process.env.NEXT_PUBLIC_EMAIL_OTP_ENABLED === "true";',
-  '  const [otpEnabled, setOtpEnabled] = useState(false);\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) setOtpEnabled(value.emailOtpAvailable === true); }).catch(() => { if (active) setOtpEnabled(false); }); return () => { active = false; }; }, []);',
-  "use live readiness for the sign-in email code option");
