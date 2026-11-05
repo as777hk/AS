@@ -2922,4 +2922,5 @@ replaceOnce("src/app/register/page.tsx",
   '<div className="auth-v2-note"><ShieldCheck size={16} /> We will email you a secure verification link. No verification code is required.</div>',
   '<div className="auth-v2-note"><ShieldCheck size={16} /> {verificationAvailable ? "We will email you a secure verification link. No verification code is required." : "Email link verification will activate when the StudioSpace sender address is configured."}</div>',
   "show accurate native verification readiness on signup");
-\nconsole.log("AUTH_DEBUG_LINES", readFileSync("src/lib/auth.ts", "utf8").split("\\n").slice(95,112).map((line, index) => `${index + 96}: ${line}`).join("\\n"));\n
+
+console.log("AUTH_DEBUG_LINES", readFileSync("src/lib/auth.ts", "utf8").split(String.fromCharCode(10)).slice(95,112).map((line, index) => `${index + 96}: ${line}`).join(String.fromCharCode(10)));
