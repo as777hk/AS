@@ -3060,3 +3060,45 @@ button:active, .btn:active { transform: translateY(1px) scale(.99); }
 }
 `;
 writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + "\n" + smoothIntroCss);
+
+
+// Final password visibility repair: target the actual current login/register/admin
+// components after the later authentication UI rewrites, not earlier obsolete markup.
+replaceOnce("src/app/login/login-client.tsx",
+  'import {ArrowLeft,ArrowRight,ShieldCheck} from "lucide-react";',
+  'import {ArrowLeft,ArrowRight,Eye,EyeOff,ShieldCheck} from "lucide-react";',
+  "import password visibility icons into final member login component");
+replaceOnce("src/app/login/login-client.tsx",
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [captchaId,setCaptchaId]=useState("");',
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [showPassword,setShowPassword]=useState(false);const [captchaId,setCaptchaId]=useState("");',
+  "add show password state to final member login component");
+replaceOnce("src/app/login/login-client.tsx",
+  '<div className="auth-v2-field"><label htmlFor="login-password">Password</label><input className="auth-v2-input" id="login-password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password"/></div>',
+  '<div className="auth-v2-field"><label htmlFor="login-password">Password</label><div className="auth-v2-password-wrap"><input className="auth-v2-input" id="login-password" type={showPassword?"text":"password"} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password"/><button className="auth-v2-password-toggle" type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></div>',
+  "render accessible show hide control on final member login password field");
+
+replaceOnce("src/app/register/page.tsx",
+  'import { ArrowLeft, ArrowRight, CheckCircle2, Mail, ShieldCheck } from "lucide-react";',
+  'import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Mail, ShieldCheck } from "lucide-react";',
+  "import password visibility icons into final registration component");
+replaceOnce("src/app/register/page.tsx",
+  '  const [password, setPassword] = useState("");',
+  '  const [password, setPassword] = useState("");\n  const [showPassword, setShowPassword] = useState(false);',
+  "add show password state to final registration component");
+replaceOnce("src/app/register/page.tsx",
+  '<input className="auth-v2-input" id="register-password" type="password" autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="At least 8 characters" />',
+  '<div className="auth-v2-password-wrap"><input className="auth-v2-input" id="register-password" type={showPassword ? "text" : "password"} autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="At least 8 characters" /><button className="auth-v2-password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>',
+  "render accessible show hide control on final registration password field");
+
+replaceOnce("src/app/as/page.tsx",
+  'import {ArrowLeft,ArrowUpRight,Fingerprint,KeyRound,LockKeyhole,ShieldCheck} from "lucide-react";',
+  'import {ArrowLeft,ArrowUpRight,Eye,EyeOff,Fingerprint,KeyRound,LockKeyhole,ShieldCheck} from "lucide-react";',
+  "import password visibility icons into final admin portal");
+replaceOnce("src/app/as/page.tsx",
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [busy,setBusy]=useState(false);',
+  'const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [showPassword,setShowPassword]=useState(false);const [busy,setBusy]=useState(false);',
+  "add show password state to final admin portal");
+replaceOnce("src/app/as/page.tsx",
+  '<label htmlFor="as-admin-password">ADMINISTRATOR PASSWORD</label><div className="as-portal-input-wrap"><KeyRound size={17}/><input id="as-admin-password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter secure password"/></div>',
+  '<label htmlFor="as-admin-password">ADMINISTRATOR PASSWORD</label><div className="as-portal-input-wrap"><KeyRound size={17}/><input id="as-admin-password" type={showPassword?"text":"password"} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter secure password"/><button className="as-portal-password-toggle" type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div>',
+  "render accessible show hide control on final admin password field");
