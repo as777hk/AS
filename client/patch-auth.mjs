@@ -2883,3 +2883,42 @@ replaceOnce("src/app/api/auth/readiness/route.ts",
   'return NextResponse.json({ emailOtpAvailable, googleAvailable }',
   'return NextResponse.json({ emailOtpAvailable, emailVerificationAvailable, googleAvailable }',
   "return native verification readiness without exposing credentials");
+
+
+
+// Keep current account creation operational until the production sender is verified.
+// Once RESEND_API_KEY and AUTH_FROM_EMAIL are both configured, Better Auth enforces
+// native token-link verification automatically.
+replaceOnce("src/lib/auth.ts",
+  'const emailOtpEnabled = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
+  'const emailVerificationEnabled = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
+  "name the native link verification availability flag");
+replaceOnce("src/lib/auth.ts",
+  'requireEmailVerification: true,',
+  'requireEmailVerification: emailVerificationEnabled,',
+  "require native link verification when a verified sender is configured");
+replaceOnce("src/lib/auth.ts",
+  'sendOnSignUp: true,\\n    sendOnSignIn: true,',
+  'sendOnSignUp: emailVerificationEnabled,\\n    sendOnSignIn: emailVerificationEnabled,',
+  "gate native verification emails on real delivery readiness");
+
+replaceOnce("src/app/register/page.tsx",
+  'import { useState } from "react";',
+  'import { useEffect, useState } from "react";',
+  "check native verification sender readiness on registration");
+replaceOnce("src/app/register/page.tsx",
+  'import { authClient } from "@/lib/auth-client";',
+  'import { authClient, syncAuthCookie } from "@/lib/auth-client";',
+  "preserve session setup when email link sender is not configured");
+replaceOnce("src/app/register/page.tsx",
+  '  const router = useRouter();',
+  '  const router = useRouter();\\n  const [verificationAvailable, setVerificationAvailable] = useState(false);\\n  useEffect(() => { let active = true; fetch("/api/auth/readiness", { cache: "no-store" }).then(response => response.ok ? response.json() : Promise.reject()).then(value => { if (active) setVerificationAvailable(value.emailVerificationAvailable === true); }).catch(() => { if (active) setVerificationAvailable(false); }); return () => { active = false; }; }, []);',
+  "read Better Auth email verification readiness for signup");
+replaceOnce("src/app/register/page.tsx",
+  '      setVerificationSent(true);\\n      toast.success("Your verification link has been sent. Please check your inbox.");',
+  '      if (verificationAvailable) {\\n        setVerificationSent(true);\\n        toast.success("Your verification link has been sent. Please check your inbox.");\\n      } else {\\n        await syncAuthCookie();\\n        toast.success("Your account is ready. You can now sign in.");\\n        router.push("/login");\\n        router.refresh();\\n      }',
+  "only show link-pending state when the sender can actually deliver");
+replaceOnce("src/app/register/page.tsx",
+  '<div className="auth-v2-note"><ShieldCheck size={16} /> We will email you a secure verification link. No verification code is required.</div>',
+  '<div className="auth-v2-note"><ShieldCheck size={16} /> {verificationAvailable ? "We will email you a secure verification link. No verification code is required." : "Email link verification will activate when the StudioSpace sender address is configured."}</div>',
+  "show accurate native verification readiness on signup");
