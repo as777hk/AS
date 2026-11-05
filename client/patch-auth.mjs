@@ -2501,3 +2501,77 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
 }
 `);
 console.log("Cursor effects limited to cards and frame-synced.");
+
+
+// Accessible show/hide controls for password inputs on Admin, Login and Register.
+// This only changes the local input type; passwords are never copied to page text or logs.
+replaceOnce("src/app/login/login-client.tsx",
+  'import { ArrowLeft, ArrowRight, KeyRound, LockKeyhole, Mail, ShieldCheck } from "lucide-react";',
+  'import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, LockKeyhole, Mail, ShieldCheck } from "lucide-react";',
+  "add accessible password visibility icons to member login");
+replaceOnce("src/app/login/login-client.tsx",
+  '  const [password, setPassword] = useState("");',
+  '  const [password, setPassword] = useState("");\n  const [showPassword, setShowPassword] = useState(false);',
+  "add member login password visibility state");
+replaceOnce("src/app/login/login-client.tsx",
+  '<input className="auth-v2-input" id="login-password" type="password" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="Enter your password" />',
+  '<div className="auth-v2-password-wrap"><input className="auth-v2-input" id="login-password" type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="Enter your password" /><button className="auth-v2-password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>',
+  "add show hide toggle to member login password");
+
+replaceOnce("src/app/register/page.tsx",
+  'import { ArrowLeft, ArrowRight, CheckCircle2, Mail, ShieldCheck, UserRound } from "lucide-react";',
+  'import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Mail, ShieldCheck, UserRound } from "lucide-react";',
+  "add accessible password visibility icons to registration");
+replaceOnce("src/app/register/page.tsx",
+  '  const [password, setPassword] = useState("");',
+  '  const [password, setPassword] = useState("");\n  const [showPassword, setShowPassword] = useState(false);',
+  "add registration password visibility state");
+replaceOnce("src/app/register/page.tsx",
+  '<input className="auth-v2-input" id="register-password" type="password" autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="At least 8 characters" />',
+  '<div className="auth-v2-password-wrap"><input className="auth-v2-input" id="register-password" type={showPassword ? "text" : "password"} autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} placeholder="At least 8 characters" /><button className="auth-v2-password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div>',
+  "add show hide toggle to registration password");
+
+replaceOnce("src/app/as/page.tsx",
+  'import { ArrowLeft, ArrowUpRight, Fingerprint, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";',
+  'import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Fingerprint, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";',
+  "add accessible password visibility icons to admin portal");
+replaceOnce("src/app/as/page.tsx",
+  '  const [password, setPassword] = useState("");',
+  '  const [password, setPassword] = useState("");\n  const [showPassword, setShowPassword] = useState(false);',
+  "add admin password visibility state");
+replaceOnce("src/app/as/page.tsx",
+  '                  type="password"\n                  autoComplete="current-password"',
+  '                  type={showPassword ? "text" : "password"}\n                  autoComplete="current-password"',
+  "make admin password input visibility state driven");
+replaceOnce("src/app/as/page.tsx",
+  '                  placeholder="Enter secure password"\n                />\n              </div>',
+  '                  placeholder="Enter secure password"\n                />\n                <button className="as-portal-password-toggle" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>\n              </div>',
+  "add show hide toggle to admin password");
+
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
+/* Password visibility controls for member login and registration. */
+.auth-v2-password-wrap { position: relative; width: 100%; display: flex; align-items: center; }
+.auth-v2-password-wrap .auth-v2-input { padding-right: 52px; }
+.auth-v2-password-toggle {
+  position: absolute; top: 50%; right: 8px; width: 36px; height: 36px;
+  display: grid; place-items: center; transform: translateY(-50%);
+  border: 0; border-radius: 9px; background: transparent; color: #73776f;
+  cursor: pointer; transition: color .18s ease, background .18s ease;
+}
+.auth-v2-password-toggle:hover { color: var(--ss-accent-dark); background: rgba(223,90,67,.08); }
+.auth-v2-password-toggle:focus-visible { outline: 2px solid var(--ss-accent); outline-offset: 1px; }
+.dark .auth-v2-password-toggle { color: #c1c4bc; }
+.dark .auth-v2-password-toggle:hover { color: #f1a18a; background: rgba(241,161,138,.1); }
+`);
+writeFileSync("src/app/as/portal.css", readFileSync("src/app/as/portal.css", "utf8") + `
+.as-portal-password-toggle {
+  flex: 0 0 34px; width: 34px; height: 36px; display: inline-grid;
+  place-items: center; margin-left: 2px; padding: 0; border: 0; border-radius: 8px;
+  background: transparent; color: #aab7a8; cursor: pointer;
+  transition: color .18s ease, background .18s ease;
+}
+.as-portal-password-toggle:hover { color: var(--as-lime); background: rgba(197,229,156,.09); }
+.as-portal-password-toggle:focus-visible { outline: 2px solid var(--as-lime); outline-offset: 2px; }
+.as-portal-input-wrap input { flex: 1; width: auto; }
+`);
+console.log("Accessible password visibility toggles added to Admin, Login and Register.");
