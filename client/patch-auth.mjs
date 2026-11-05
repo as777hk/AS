@@ -2850,11 +2850,11 @@ patchGeneratedOutput(
 
 // Remove password recovery entry points; the assignment explicitly excludes this feature.
 let loginClient = readFileSync("src/app/login/login-client.tsx", "utf8");
-loginClient = loginClient.replace(/\\s*<p className="auth-v2-bottom"><Link href="\\/forgot-password">Forgot password\\?<\\/Link><\\/p>/g, "");
+loginClient = loginClient.replaceAll('<p className="auth-v2-bottom"><Link href="/forgot-password">Forgot password?</Link></p>', "");
 writeFileSync("src/app/login/login-client.tsx", loginClient);
 
 let twoFactorPage = readFileSync("src/app/two-factor/page.tsx", "utf8");
-twoFactorPage = twoFactorPage.replace(/\\s*<p style=\\{\\{marginTop:20,color:"var\\(--muted\\)",fontSize:13\\}\\}>Forgot your password\\? <a href="\\/forgot-password">Reset it using an email verification code<\\/a>\\.<\\/p>/g, "");
+twoFactorPage = twoFactorPage.replaceAll('<p style={{marginTop:20,color:"var(--muted)",fontSize:13}}>Forgot your password? <a href="/forgot-password">Reset it using an email verification code</a>.</p>', "");
 writeFileSync("src/app/two-factor/page.tsx", twoFactorPage);
 
 let securityGate = readFileSync("src/components/security-gate.tsx", "utf8");
