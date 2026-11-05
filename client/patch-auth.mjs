@@ -1276,7 +1276,8 @@ export function ScrollMotion() {
         const x = Math.max(0, Math.min(100, ((latestPointerX - rect.left) / Math.max(rect.width, 1)) * 100));
         const y = Math.max(0, Math.min(100, ((latestPointerY - rect.top) / Math.max(rect.height, 1)) * 100));
         const isStudioCard = target.matches(".studio-card");
-        const motionScale = reduced.matches ? 0.35 : 1;\n        const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4) * motionScale;
+        const motionScale = reduced.matches ? 0.35 : 1;
+        const tiltX = ((x - 50) / 50) * (isStudioCard ? 6.2 : 4.4) * motionScale;
         const tiltY = ((50 - y) / 50) * (isStudioCard ? 4.8 : 3.5) * motionScale;
         target.style.setProperty("--ss-hover-x", x.toFixed(1) + "%");
         target.style.setProperty("--ss-hover-y", y.toFixed(1) + "%");
@@ -2781,7 +2782,7 @@ replaceOnce("src/app/reset-password/page.tsx",
 
 // Keep the explicitly requested mouse tilt available on any device with a mouse,
 // including touch-primary laptops. Reduced-motion users receive a much gentler tilt.
-writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw\`
+writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
 @media (any-hover: hover) and (any-pointer: fine) {
   .studio-card.ss-pointer-card.ss-pointer-active {
     transform:
@@ -2807,4 +2808,4 @@ writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.c
     transition: none !important;
   }
 }
-\`);
+`);
