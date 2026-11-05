@@ -2777,3 +2777,92 @@ replaceOnce("src/app/reset-password/page.tsx",
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>',
   '<h1 style={{fontFamily:"Georgia,serif",fontWeight:500,letterSpacing:"-.05em"}}>Set a new <em>password.</em></h1>{!checkingEmailOtp&&!emailOtpAvailable&&<p role="alert" style={{color:"#b42318"}}>Email verification is currently unavailable. The email sender is not configured, so a valid code cannot be checked.</p>}',
   "show reset email readiness to users");
+
+
+// Assignment compliance: email 2FA must never turn signup verification on.
+// Email delivery is controlled independently from signup and passwordless email sign-in.
+function patchGeneratedOutput(path, before, after, label) {
+  let content = readFileSync(path, "utf8");
+  if (content.includes(after)) return;
+  if (!content.includes(before)) {
+    throw new Error(`Could not apply ${label}: expected generated source was not found in ${path}.`);
+  }
+  content = content.replace(before, after);
+  writeFileSync(path, content);
+}
+
+patchGeneratedOutput(
+  "src/lib/auth.ts",
+  'const emailOtpEnabled = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);',
+  'const emailOtpDeliveryReady = Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL);\\nconst emailTwoFactorEnabled = process.env.EMAIL_2FA_ENABLED === "true" && emailOtpDeliveryReady;',
+  "separate email delivery readiness from email 2FA switch"
+);
+patchGeneratedOutput(
+  "src/lib/auth.ts",
+  "requireEmailVerification: emailOtpEnabled",
+  "requireEmailVerification: false",
+  "keep assignment signup email verification disabled"
+);
+patchGeneratedOutput(
+  "src/lib/auth.ts",
+  "sendVerificationOnSignUp: emailOtpEnabled",
+  "sendVerificationOnSignUp: false",
+  "never send verification email on signup"
+);
+patchGeneratedOutput(
+  "src/lib/auth.ts",
+  'async sendOTP({ user, otp }) { await sendStudioSpaceCode({ email: user.email, otp, type: "two-factor" }); }',
+  'async sendOTP({ user, otp }) { if (!emailTwoFactorEnabled) throw new Error("Email two-factor authentication is not enabled."); await sendStudioSpaceCode({ email: user.email, otp, type: "two-factor" }); }',
+  "enforce the explicit email 2FA feature flag during delivery"
+);
+patchGeneratedOutput(
+  "src/lib/auth.ts",
+  'if (ctx.path === "/two-factor/enable" && ctx.body?.method === "otp" && (!process.env.RESEND_API_KEY || !process.env.AUTH_FROM_EMAIL)) { throw new APIError("SERVICE_UNAVAILABLE", { message: "Email verification is unavailable until the StudioSpace email sender is configured." }); }',
+  'if (ctx.path === "/two-factor/enable" && ctx.body?.method === "otp" && !emailTwoFactorEnabled) { throw new APIError("SERVICE_UNAVAILABLE", { message: "Email two-factor authentication is unavailable until the sender is configured and EMAIL_2FA_ENABLED is true." }); }',
+  "gate email 2FA enrollment on sender and feature flag"
+);
+patchGeneratedOutput(
+  "src/lib/auth.ts",
+  'type === "sign-in"\\n    ? "Your sign-in code"\\n    : "Reset your StudioSpace password";',
+  'type === "sign-in"\\n    ? "Your sign-in code"\\n    : type === "two-factor"\\n      ? "Your security verification code"\\n      : "Reset your StudioSpace password";',
+  "use correct subject for email two-factor codes"
+);
+patchGeneratedOutput(
+  "src/lib/auth.ts",
+  'type === "sign-in"\\n      ? "Enter this code on the StudioSpace sign-in page to access your account."\\n      : "Enter this code to continue resetting your StudioSpace password.";',
+  'type === "sign-in"\\n      ? "Enter this code on the StudioSpace sign-in page to access your account."\\n      : type === "two-factor"\\n        ? "Enter this code to complete two-factor verification for your StudioSpace account."\\n        : "Enter this code to continue resetting your StudioSpace password."; ',
+  "use correct email copy for email two-factor codes"
+);
+
+// The readiness endpoint is the only source of truth for whether the UI may offer email 2FA.
+patchGeneratedOutput(
+  "src/app/api/security/methods/route.ts",
+  'emailOtpAvailable:Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL)',
+  'emailOtpAvailable:process.env.EMAIL_2FA_ENABLED === "true" && Boolean(process.env.RESEND_API_KEY && process.env.AUTH_FROM_EMAIL)',
+  "report email 2FA availability correctly"
+);
+patchGeneratedOutput(
+  "src/app/api/security/methods/route.ts",
+  '(!process.env.RESEND_API_KEY||!process.env.AUTH_FROM_EMAIL)',
+  '(process.env.EMAIL_2FA_ENABLED !== "true" || !process.env.RESEND_API_KEY || !process.env.AUTH_FROM_EMAIL)',
+  "reject email 2FA preference unless explicitly enabled"
+);
+
+// Remove password recovery entry points; the assignment explicitly excludes this feature.
+let loginClient = readFileSync("src/app/login/login-client.tsx", "utf8");
+loginClient = loginClient.replace(/\\s*<p className="auth-v2-bottom"><Link href="\\/forgot-password">Forgot password\\?<\\/Link><\\/p>/g, "");
+writeFileSync("src/app/login/login-client.tsx", loginClient);
+
+let twoFactorPage = readFileSync("src/app/two-factor/page.tsx", "utf8");
+twoFactorPage = twoFactorPage.replace(/\\s*<p style=\\{\\{marginTop:20,color:"var\\(--muted\\)",fontSize:13\\}\\}>Forgot your password\\? <a href="\\/forgot-password">Reset it using an email verification code<\\/a>\\.<\\/p>/g, "");
+writeFileSync("src/app/two-factor/page.tsx", twoFactorPage);
+
+let securityGate = readFileSync("src/components/security-gate.tsx", "utf8");
+securityGate = securityGate.replaceAll(',"/forgot-password","/reset-password"', "");
+securityGate = securityGate.replaceAll('"/forgot-password","/reset-password",', "");
+writeFileSync("src/components/security-gate.tsx", securityGate);
+
+mkdirSync("src/app/forgot-password", { recursive: true });
+writeFileSync("src/app/forgot-password/page.tsx", 'import { notFound } from "next/navigation";\\nexport default function ForgotPasswordPage(): never { notFound(); }\\n');
+
+console.log("Assignment auth compliance applied: signup email verification off, email 2FA independently gated, password recovery unavailable.");
