@@ -2866,3 +2866,14 @@ mkdirSync("src/app/forgot-password", { recursive: true });
 writeFileSync("src/app/forgot-password/page.tsx", 'import { notFound } from "next/navigation";\\nexport default function ForgotPasswordPage(): never { notFound(); }\\n');
 
 console.log("Assignment auth compliance applied: signup email verification off, email 2FA independently gated, password recovery unavailable.");
+
+
+// There is intentionally no password-recovery flow in this assignment.
+mkdirSync("src/app/reset-password", { recursive: true });
+writeFileSync("src/app/reset-password/page.tsx", 'import { notFound } from "next/navigation";\\nexport default function ResetPasswordPage(): never { notFound(); }\\n');
+
+let securitySetup = readFileSync("src/app/security/setup/page.tsx", "utf8");
+securitySetup = securitySetup
+  .replaceAll("<strong>Email verification code</strong>", "<strong>Email security code (2FA)</strong>")
+  .replaceAll("Receive a one-time code in your verified email inbox.", "Use a one-time code delivered to your email as a second sign-in step.");
+writeFileSync("src/app/security/setup/page.tsx", securitySetup);
