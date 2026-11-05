@@ -9,7 +9,7 @@
 - MongoDB Atlas cluster `AnnikaCluster`, database `studiospace`.
 - Dedicated Atlas API user `studiospace_api` has only `readWrite` access to the `studiospace` database. Its URI is stored as a Sensitive Vercel environment value.
 - Six illustrative demo studio documents exist in the `studios` collection, all marked as demo data and assigned to `examiner@studiospace.demo`. Current Atlas counts: 6 studios, 6 users, 7 accounts, 3 two-factor records, 1 wishlist, 0 bookings and 0 reviews.
-- The examiner user exists in Better Auth's `user` collection. The examiner user exists in Better Auth's `user` collection; the current counts are listed above.
+- The examiner user exists in Better Auth's `user` collection.
 
 ## Vercel projects
 
@@ -37,7 +37,7 @@
 - Frontend ESLint: 0 errors, 7 non-blocking `@next/next/no-img-element` warnings for dynamically supplied/remote images.
 - Backend `npm test`: TypeScript compilation passed; 4/4 booking-rule tests passed (date, time window, interval overlap and total calculation).
 - Production dependency audit after jsPDF upgrade to 4.2.1: 0 production vulnerabilities. Full audit has 16 moderate findings in development-only ESLint tooling; no high or critical findings.
-- Latest runtime error history contains old events from earlier deployments: the Better Auth `sessionCookieCache` configuration error and one old OAuth `State not found` event. The current source removes the invalid session-cookie-cache option, current Google initiation succeeds, and the latest clean production build is READY. Do not treat historical events as a current live error.
+- Runtime error history includes earlier Google OAuth state/account-linking errors and email OTP delivery failures from before the latest production deployment. Email OTP was not configured when those failures occurred; the current production logs have not yet been replaced by a verified end-to-end browser test. Recheck OAuth and email delivery after the new preview build is verified.
 
 ## Current items still requiring manual verification
 
@@ -47,7 +47,8 @@
 4. Add, edit and delete a studio; verify another account cannot edit the examiner's listing.
 5. Create a booking, cancel a Pending request, then confirm one as host; submit an overlapping confirmed interval and verify it is rejected.
 6. Save/unsave a studio, refresh the saved page and download a confirmed-booking PDF invoice.
-7. Test Light/Dark mode, the mobile navigation, category filters, homepage hash links and image rendering on a phone-sized viewport.\n8. Add a real `IMGBB_API_KEY` to the frontend Vercel project and test an authenticated file upload. Hosted image URLs remain usable until the key is configured.
+7. Test Light/Dark mode, the mobile navigation, category filters, homepage hash links and image rendering on a phone-sized viewport.
+8. Add a real `IMGBB_API_KEY` to the frontend Vercel project and test an authenticated file upload. Hosted image URLs remain usable until the key is configured.
 
 ## Honest feature boundaries
 
