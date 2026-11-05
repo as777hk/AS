@@ -105,22 +105,26 @@ To enable local uploads in production:
 Only image files are accepted, with a maximum upload size of 32,000,000 bytes. The supported file picker formats are JPEG, PNG and WebP. The API key must remain server-side; do not rename it to a `NEXT_PUBLIC_*` variable. Pasting an already-hosted image URL remains available when uploads are not configured.
 
 
-## Account security and email verification codes
+## Account security and SMTP email delivery
 
-StudioSpace includes a custom member sign-in and registration experience. Password sign-in remains available. Email one-time codes can be enabled for new account verification and passwordless sign-in through Better Auth's Email OTP plugin.
+StudioSpace uses Better Auth's native `emailVerification` flow for signup. New members receive a secure, one-hour verification link by email; they do not enter a six-digit code to verify a new account. Password sign-in is blocked until the address is verified.
 
-To activate email codes in Vercel:
+Email delivery uses Nodemailer over SMTP, not Resend. Choose an SMTP provider or a mailbox that permits authenticated SMTP sending, then configure these variables in the Vercel **as-frontend** project:
 
-1. Create a Resend account and verify the sending domain you will use.
-2. In the **as-frontend** Vercel project, add `RESEND_API_KEY` as a Sensitive environment variable.
-3. Add `AUTH_FROM_EMAIL` as the verified sender, for example `StudioSpace <accounts@your-verified-domain.com>`.
-4. Add `NEXT_PUBLIC_EMAIL_OTP_ENABLED=true` as a Plain environment variable so the account screens expose the email code flow.
-5. Apply the variables to Production. Add them to Preview and Development if those environments should send real codes.
-6. Redeploy the frontend.
+| Environment variable | Purpose |
+| --- | --- |
+| `SMTP_HOST` | SMTP server hostname |
+| `SMTP_PORT` | SMTP port, commonly 587 for STARTTLS or 465 for implicit TLS |
+| `SMTP_SECURE` | `false` for STARTTLS (normally port 587); `true` for implicit TLS (normally port 465) |
+| `SMTP_USER` | SMTP login username |
+| `SMTP_PASS` | SMTP password or provider-issued app password |
+| `AUTH_FROM_EMAIL` | Verified sender address, optionally with a display name |
 
-When both server-side email variables are present, the server requires email verification before password sign-in. Verification codes contain six digits, expire after five minutes, allow five attempts and are stored in hashed form. The Resend API key is used only on the server and must never be exposed with a `NEXT_PUBLIC_` prefix.
+Add SMTP credentials as encrypted environment variables. Keep every SMTP value server-side; do not use a `NEXT_PUBLIC_` prefix or commit credentials to GitHub. Apply the values to Production, and to Preview/Development only when those environments should send real mail. Redeploy after configuration.
 
-If these environment variables are not configured, the existing password account flow remains enabled and the code options stay unavailable. Do not enable only the public flag without configuring the server-side sender.
+When SMTP is configured, Better Auth sends its native verification link on signup and when an unverified member tries to sign in. The separate Email OTP plugin remains available for optional six-digit email sign-in/MFA or password-recovery flows; it does not replace the signup link. Set `NEXT_PUBLIC_EMAIL_OTP_ENABLED=true` only after SMTP email delivery is working.
+
+If SMTP is not configured, the readiness endpoint reports email delivery as unavailable and the signup page will not claim that a verification message was sent.
 
 Phone-number verification uses the Better Auth Phone Number plugin with Twilio Verify. The code sends SMS verification requests from the server, checks the code with Twilio, stores the verified phone number on the signed-in member, and makes phone-code sign-in available for verified numbers.
 
