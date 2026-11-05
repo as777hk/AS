@@ -1139,7 +1139,14 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 const hoverSelector = [
-  ".studio-card", ".ss-category-card", ".ss-step", ".about-value-card"
+  ".site-header", ".site-header .brand", ".main-nav a:not([href='/'])", ".nav-actions a", ".nav-actions button",
+  "main section", "main section h1", "main section h2", "main section h3", "main section p",
+  "main section a", "main section button", "main section img", "main section article",
+  ".ss-hero-panel", ".ss-hero-copy", ".ss-hero-topline", ".ss-hero-foot",
+  ".ss-section-head", ".ss-category-card", ".ss-step", ".studio-card",
+  ".filter-bar", ".auth-v2-panel", ".auth-v2-visual", ".detail-gallery > *",
+  ".content-copy > *", ".footer-grid > *", ".footer-grid a", ".footer-grid button",
+  ".about-value-card", ".how-page-note-inner", ".about-page-cta-inner"
 ].join(",");
 
 function hoverType(element: HTMLElement): "section" | "text" | "image" | "control" | "card" {
@@ -1232,8 +1239,16 @@ export function ScrollMotion() {
     });
     onMutations.observe(document.body, { childList: true, subtree: true });
 
-    // No full-screen cursor-following glow: it caused expensive compositing
-    // across the entire page on every pointer movement.
+    // Restore the original pointer-following aura and element feedback.
+    // Pointer updates are coalesced to one requestAnimationFrame for smooth rendering.
+    let aura = document.querySelector<HTMLDivElement>(".ss-cursor-aura");
+    if (!aura) {
+      aura = document.createElement("div");
+      aura.className = "ss-cursor-aura";
+      aura.setAttribute("aria-hidden", "true");
+      document.body.appendChild(aura);
+    }
+
     let activeTarget: HTMLElement | null = null;
     const clearActive = () => {
       if (!activeTarget) return;
@@ -1256,20 +1271,23 @@ export function ScrollMotion() {
       if (!next) return;
       activeTarget = next;
       next.classList.add("ss-pointer-active", "ss-pointer-" + hoverType(next));
+      document.body.classList.add("ss-pointer-live");
     };
 
-    // Coalesce high-frequency pointer events to one visual update per frame.
-    // Only a card currently under the pointer is measured or transformed.
+    // Coalesce the aura and active-surface response to one visual update per frame.
     let pointerFrame = 0;
     let latestPointerX = 0;
     let latestPointerY = 0;
     const onPointerMove = (event: PointerEvent) => {
-      if (!finePointer.matches || event.pointerType === "touch" || !activeTarget) return;
+      if (!finePointer.matches || event.pointerType === "touch") return;
       latestPointerX = event.clientX;
       latestPointerY = event.clientY;
       if (pointerFrame) return;
       pointerFrame = window.requestAnimationFrame(() => {
         pointerFrame = 0;
+        if (aura) {
+          aura.style.transform = "translate3d(" + latestPointerX + "px," + latestPointerY + "px,0)";
+        }
         const target = activeTarget;
         if (!target) return;
         const rect = target.getBoundingClientRect();
@@ -1293,6 +1311,7 @@ export function ScrollMotion() {
       const source = event.target;
       if (source instanceof Node && activeTarget.contains(source)) {
         clearActive();
+        document.body.classList.remove("ss-pointer-live");
       }
     };
 
@@ -2492,14 +2511,9 @@ replaceOnce("src/app/as/page.tsx",
   "clear each one-time admin login challenge after successful CAPTCHA verification");
 
 
-// Cursor performance hardening: no global glow or page-wide pointer transforms.
-writeFileSync("src/app/brand-refresh.css", readFileSync("src/app/brand-refresh.css", "utf8") + String.raw`
-.ss-cursor-aura { display: none !important; }
-@media (hover: hover) and (pointer: fine) {
-  .ss-pointer-section, .ss-pointer-text, .ss-pointer-image, .ss-pointer-control { translate: none !important; scale: none !important; filter: none !important; box-shadow: none !important; text-shadow: none !important; }
-}
-`);
-console.log("Cursor effects limited to cards and frame-synced.");
+// Keep the original cursor aura and non-card pointer feedback enabled.
+// The frame-synced controller above avoids the previous page-wide pointer jank.
+console.log("Original site pointer interactions restored with frame-synced updates.");
 
 
 
