@@ -1,5 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
+// Vercel reconstructs the app from the checked-in source archive before running
+// npm install. Keep the mail transport dependency in that reconstructed manifest.
+const rootPackage = JSON.parse(readFileSync("package.json", "utf8"));
+rootPackage.dependencies = { ...rootPackage.dependencies, nodemailer: "^10.3.1" };
+if (rootPackage.devDependencies) delete rootPackage.devDependencies["@types/nodemailer"];
+writeFileSync("package.json", JSON.stringify(rootPackage, null, 2) + "\n");
+
 function patchFile(path, replacements) {
   let source = readFileSync(path, "utf8");
   for (const [before, after, label] of replacements) {
