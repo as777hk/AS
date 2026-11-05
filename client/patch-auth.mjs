@@ -2862,7 +2862,7 @@ replaceOnce("src/lib/auth.ts",
   "configure Better Auth native link verification on signup and unverified sign-in");
 replaceOnce("src/lib/auth.ts",
   '      overrideDefaultEmailVerification: true,\n      changeEmail: { enabled: true, verifyCurrentEmail: true },\n      sendVerificationOnSignUp: emailOtpEnabled,',
-  '      overrideDefaultEmailVerification: false,\n      sendVerificationOnSignUp: false,',
+  '      overrideDefaultEmailVerification: false,\n      changeEmail: { enabled: true, verifyCurrentEmail: true },\n      sendVerificationOnSignUp: false,',
   "keep emailOTP separate from Better Auth native signup verification");
 
 // Replace the registration screen's code-entry flow with Better Auth's native email link flow.
